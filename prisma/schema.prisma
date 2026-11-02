@@ -1,0 +1,89 @@
+// RemoteSense Hub 数据模型
+// 说明：为兼容本地 SQLite 开发与生产 Postgres，枚举值用 String 存储，
+// 取值约束由 src/lib/validations.ts 的 Zod schema 在 API 层强制保证。
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // 本地开发 sqlite；生产改为 postgresql，仅需改此处与 DATABASE_URL
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// 需求
+model Demand {
+  id        String   @id @default(cuid())
+  title     String   // 10-80 字（Zod 强制）
+  category  String   // 影像获取 / 数据处理 / 模型训练 / 变化检测 / 专题制图 / 其他
+  region    String   // 目标区域
+  area      String?  // 面积 / 范围描述
+  resolution String? // 分辨率要求
+  timeRange String   // 时间要求
+  budget    String?  // 预算区间枚举
+  description String // 50-2000 字（Zod 强制）
+
+  contactName  String
+  contactPhone String // 中国大陆 11 位手机号（Zod 强制）
+  contactEmail String // 邮箱格式（Zod 强制）
+  company      String?
+
+  // 免注册核心：一次性凭证，只存哈希
+  verifyTokenHash String?  @unique // 发布验证 token 哈希
+  verifyExpiresAt DateTime?        // 验证有效期 24h
+  manageTokenHash String?  @unique // 管理链接 token 哈希
+
+  // 未勾选则详情页只保留「提交合作意向」，由平台人工转达
+  allowDirectContact Boolean @default(true)
+
+  status    String   @default("pending") // pending / published / closed / rejected
+  viewCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inquiries Inquiry[]
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([category])
+  @@index([region])
+}
+
+/// 服务方对需求的咨询 / 认领
+model Inquiry {
+  id        String   @id @default(cuid())
+  demand    Demand   @relation(fields: [demandId], references: [id], onDelete: Cascade)
+  demandId  String
+  name      String
+  phone     String
+  email     String
+  message   String // 服务方案说明
+  createdAt DateTime @default(now())
+
+  @@index([demandId, createdAt])
+}
+
+/// 商务合作咨询（自动转发到 COOPERATION_EMAIL）
+model Cooperation {
+  id        Int      @id @default(autoincrement())
+  name      String
+  company   String?
+  phone     String?
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+}
+
+/// 基于 IP 的限流记录
+model RateLimit {
+  id          Int      @id @default(autoincrement())
+  ip          String
+  action      String // 'publish' | 'inquiry' | 'cooperation'
+  count       Int      @default(1)
+  windowStart DateTime @default(now())
+
+  @@unique([ip, action])
+  @@index([windowStart])
+}
