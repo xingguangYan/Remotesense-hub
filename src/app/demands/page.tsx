@@ -71,13 +71,15 @@ export default async function DemandsPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
-      <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
         <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
           {t.demands.title}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {t.demands.subtitle.replace("{count}", String(total))}
         </p>
+        </div>
       </div>
 
       <div className="mt-6">

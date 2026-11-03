@@ -55,6 +55,7 @@ export default async function DemandDetailPage({ params }: { params: Params }) {
     notFound()
   }
 
+  // 浏览量统计（失败不影响渲染）
   prisma.demand
     .update({
       where: { id: demand.id },
@@ -101,31 +102,25 @@ export default async function DemandDetailPage({ params }: { params: Params }) {
         </Link>
       </Button>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-        <div className="border-b border-border bg-gradient-to-br from-[#122456] to-[#1E3A8A] p-6 sm:p-8">
+      <div className="rounded-lg border border-border bg-white shadow-sm">
+        <div className="border-b border-border p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-white/15 px-2 py-0.5 text-xs font-medium text-white">
-              {categoryLabel}
-            </span>
-            <span className="text-xs text-white/60">
+            <Badge variant="accent">{categoryLabel}</Badge>
+            <span className="text-xs text-muted-foreground">
               {timeAgo(demand.createdAt)}
               {t.common.postedAgo} · {demand.viewCount} {t.common.viewsUnit} ·{" "}
-              {demand._count.inquiries} {t.common.inquiriesUnit}
+              {t.detail.receivedPrefix} {demand._count.inquiries}{" "}
+              {t.common.inquiriesUnit}
             </span>
           </div>
-          <h1 className="mt-3 text-xl font-bold text-white sm:text-2xl">
+          <h1 className="mt-3 text-xl font-bold text-foreground sm:text-2xl">
             {demand.title}
           </h1>
-        </div>
 
-        <div className="p-6 sm:p-8">
-          <dl className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+          <dl className="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
             {specs.map((spec) => (
-              <div
-                key={spec.label}
-                className="flex items-start gap-3 rounded-md border border-border/60 bg-muted/20 px-3 py-2.5"
-              >
-                <spec.icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <div key={spec.label} className="flex items-start gap-3">
+                <spec.icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div>
                   <dt className="text-xs text-muted-foreground">{spec.label}</dt>
                   <dd className="mt-0.5 text-sm font-medium text-foreground">
@@ -178,7 +173,9 @@ export default async function DemandDetailPage({ params }: { params: Params }) {
               </p>
             </div>
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">{t.detail.contactHint}</p>
+          <p className="mt-4 text-xs text-muted-foreground">
+            {t.detail.contactHint}
+          </p>
         </div>
 
         <div className="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">

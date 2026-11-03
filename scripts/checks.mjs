@@ -44,8 +44,8 @@ await check(zh, {
   label: "zh-home",
   expect: [
     "发布遥感需求，精准对接专业服务",
-    "平台能力",
-    "典型应用场景",
+    "需求类型",
+    "覆盖遥感产业链核心环节",
     "最新需求",
     "三步完成需求对接",
     "长江中下游水稻种植面积遥感监测专题制图",
@@ -98,11 +98,9 @@ await check(en, {
   label: "en-home",
   expect: [
     "Match your remote sensing demands",
-    "Platform Capabilities",
-    "Typical Scenarios",
+    "Demand Categories",
     "Latest Demands",
     "Image Acquisition",
-    "Agriculture & Cropland",
   ],
   reject: ["平台能力"],
 })

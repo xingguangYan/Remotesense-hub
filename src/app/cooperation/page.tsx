@@ -12,33 +12,27 @@ const DIRECTIONS = [
 ] as const
 
 export default async function CooperationPage() {
-  const t = getMessages(getLocale())
+  const locale = getLocale()
+  const t = getMessages(locale)
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
-      <section className="relative overflow-hidden rounded-lg border border-border bg-[#0B1B45] p-6 shadow-sm sm:p-10">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.12]"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.6) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-          aria-hidden
-        />
-        <div className="relative max-w-2xl">
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">
-            {t.cooperation.title}
-          </h1>
-          <p className="mt-3 text-sm leading-relaxed text-white/70">
-            {t.cooperation.intro}
-          </p>
-          <div className="mt-5 flex items-center gap-2 rounded-md bg-white/10 px-4 py-3 backdrop-blur">
-            <Mail className="h-4 w-4 text-accent" />
-            <span className="text-sm font-medium text-white">
-              {siteConfig.cooperationEmail}
-            </span>
-            <CopyEmail email={siteConfig.cooperationEmail} />
+      <section className="rounded-lg border border-border bg-white p-6 shadow-sm sm:p-10">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+              {t.cooperation.title}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              {t.cooperation.intro}
+            </p>
+            <div className="mt-5 flex items-center gap-2 rounded-md bg-muted/60 px-4 py-3">
+              <Mail className="h-4 w-4 text-accent" />
+              <span className="text-sm font-medium text-foreground">
+                {siteConfig.cooperationEmail}
+              </span>
+              <CopyEmail email={siteConfig.cooperationEmail} />
+            </div>
           </div>
         </div>
       </section>
@@ -75,7 +69,9 @@ export default async function CooperationPage() {
         <h2 className="text-lg font-bold text-foreground sm:text-xl">
           {t.cooperation.formTitle}
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">{t.cooperation.formDesc}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t.cooperation.formDesc}
+        </p>
         <div className="mt-5">
           <CooperationForm />
         </div>
