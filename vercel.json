@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "prisma generate && prisma migrate deploy && node scripts/health-check.mjs && next build",
+  "buildCommand": "prisma generate && prisma migrate deploy && node --import tsx prisma/seed.ts && node scripts/health-check.mjs && next build",
   "crons": [
     {
       "path": "/api/health",

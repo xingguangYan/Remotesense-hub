@@ -1,0 +1,118 @@
+Vercel CLI 65.10.0
+2026-11-03T13:02:11.228Z  Running build in Washington, D.C., USA (East) – iad1
+2026-11-03T13:02:11.229Z  Build machine configuration: 2 cores, 8 GB
+2026-11-03T13:02:11.423Z  Cloning github.com/xingguangYan/Remotesense-hub (Branch: master, Commit: cd9e035)
+2026-11-03T13:02:11.861Z  Cloning completed: 437.000ms
+2026-11-03T13:02:12.537Z  Restored build cache from previous deployment (689epzApQDYFSUnMzfhChVpFZTYr)
+2026-11-03T13:02:13.024Z  Running "vercel build"
+2026-11-03T13:02:13.038Z  Vercel CLI 65.4.0
+2026-11-03T13:02:13.415Z  Installing dependencies...
+2026-11-03T13:02:14.192Z  npm warn Unknown env config "cache-dir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+2026-11-03T13:02:14.394Z  
+2026-11-03T13:02:14.394Z  > remotesense-hub@0.1.0 postinstall
+2026-11-03T13:02:14.394Z  > prisma generate
+2026-11-03T13:02:14.394Z  
+2026-11-03T13:02:14.908Z  Prisma schema loaded from prisma/schema.prisma
+2026-11-03T13:02:15.169Z  
+2026-11-03T13:02:15.171Z  ✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 76ms
+2026-11-03T13:02:15.171Z  
+2026-11-03T13:02:15.171Z  Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-11-03T13:02:15.171Z  
+2026-11-03T13:02:15.171Z  Tip: Want real-time updates to your database without manual polling? Discover how with Pulse: https://pris.ly/tip-0-pulse
+2026-11-03T13:02:15.171Z  
+2026-11-03T13:02:15.370Z  
+2026-11-03T13:02:15.370Z  up to date in 2s
+2026-11-03T13:02:15.370Z  
+2026-11-03T13:02:15.370Z  40 packages are looking for funding
+2026-11-03T13:02:15.370Z  run `npm fund` for details
+2026-11-03T13:02:15.371Z  npm warn install-scripts 4 packages have install scripts not yet covered by allowScripts:
+2026-11-03T13:02:15.371Z  npm warn install-scripts   @prisma/client@5.22.0 (postinstall: node scripts/postinstall.js)
+2026-11-03T13:02:15.371Z  npm warn install-scripts   @prisma/engines@5.22.0 (postinstall: node scripts/postinstall.js)
+2026-11-03T13:02:15.371Z  npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+2026-11-03T13:02:15.372Z  npm warn install-scripts   prisma@5.22.0 (preinstall: node scripts/preinstall-entry.js)
+2026-11-03T13:02:15.372Z  npm warn install-scripts
+2026-11-03T13:02:15.372Z  npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+2026-11-03T13:02:15.399Z  Detected Next.js version: 14.2.18
+2026-11-03T13:02:15.400Z  Running "prisma generate && prisma migrate deploy && node scripts/health-check.mjs && next build"
+2026-11-03T13:02:15.812Z  Prisma schema loaded from prisma/schema.prisma
+2026-11-03T13:02:16.085Z  
+2026-11-03T13:02:16.085Z  ✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 82ms
+2026-11-03T13:02:16.087Z  
+2026-11-03T13:02:16.087Z  Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-11-03T13:02:16.088Z  
+2026-11-03T13:02:16.088Z  Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+2026-11-03T13:02:16.088Z  
+2026-11-03T13:02:16.107Z  ┌─────────────────────────────────────────────────────────┐
+2026-11-03T13:02:16.107Z  │  Update available 5.22.0 -> 8.0.0-rc.29                 │
+2026-11-03T13:02:16.107Z  │                                                         │
+2026-11-03T13:02:16.107Z  │  This is a major update - please follow the guide at    │
+2026-11-03T13:02:16.107Z  │  https://pris.ly/d/major-version-upgrade                │
+2026-11-03T13:02:16.107Z  │                                                         │
+2026-11-03T13:02:16.107Z  │  Run the following to update                            │
+2026-11-03T13:02:16.107Z  │    npm i --save-dev prisma@latest                       │
+2026-11-03T13:02:16.107Z  │    npm i @prisma/client@latest                          │
+2026-11-03T13:02:16.107Z  └─────────────────────────────────────────────────────────┘
+2026-11-03T13:02:16.750Z  Prisma schema loaded from prisma/schema.prisma
+2026-11-03T13:02:16.754Z  Datasource "db": PostgreSQL database "postgres", schema "public" at "db.prisma.io:5432"
+2026-11-03T13:02:19.153Z  
+2026-11-03T13:02:19.153Z  1 migration found in prisma/migrations
+2026-11-03T13:02:19.153Z  
+2026-11-03T13:02:22.862Z  
+2026-11-03T13:02:22.862Z  No pending migrations to apply.
+2026-11-03T13:02:26.503Z  HEALTH_CHECK demands=0 inquiries=0 cooperations=0
+2026-11-03T13:02:27.462Z  ▲ Next.js 14.2.18
+2026-11-03T13:02:27.462Z  
+2026-11-03T13:02:27.489Z  Creating an optimized production build ...
+2026-11-03T13:02:33.930Z  ✓ Compiled successfully
+2026-11-03T13:02:33.932Z  Linting and checking validity of types ...
+2026-11-03T13:02:40.389Z  Collecting page data ...
+2026-11-03T13:02:41.035Z  Generating static pages (0/15) ...
+2026-11-03T13:02:41.934Z  Generating static pages (3/15)
+2026-11-03T13:02:45.252Z  Generating static pages (7/15)
+2026-11-03T13:02:47.895Z  Generating static pages (11/15)
+2026-11-03T13:02:47.962Z  ✓ Generating static pages (15/15)
+2026-11-03T13:02:48.735Z  Finalizing page optimization ...
+2026-11-03T13:02:48.735Z  Collecting build traces ...
+2026-11-03T13:02:48.856Z  
+2026-11-03T13:02:48.872Z  Route (app)                              Size     First Load JS
+2026-11-03T13:02:48.872Z  ┌ ƒ /                                    180 B          94.2 kB
+2026-11-03T13:02:48.872Z  ├ ƒ /_not-found                          873 B          88.1 kB
+2026-11-03T13:02:48.872Z  ├ ƒ /about                               180 B          94.2 kB
+2026-11-03T13:02:48.872Z  ├ ƒ /api/captcha                         0 B                0 B
+2026-11-03T13:02:48.872Z  ├ ƒ /api/cooperation                     0 B                0 B
+2026-11-03T13:02:48.872Z  ├ ƒ /api/demands                         0 B                0 B
+2026-11-03T13:02:48.872Z  ├ ƒ /api/demands/[id]/inquiries          0 B                0 B
+2026-11-03T13:02:48.872Z  ├ ○ /api/health                          0 B                0 B
+2026-11-03T13:02:48.872Z  ├ ƒ /api/manage/[token]                  0 B                0 B
+2026-11-03T13:02:48.873Z  ├ ƒ /api/manage/[token]/close            0 B                0 B
+2026-11-03T13:02:48.873Z  ├ ƒ /api/verify                          0 B                0 B
+2026-11-03T13:02:48.873Z  ├ ƒ /cooperation                         4.68 kB         136 kB
+2026-11-03T13:02:48.873Z  ├ ƒ /demands                             4.98 kB         106 kB
+2026-11-03T13:02:48.873Z  ├ ƒ /demands/[id]                        5.23 kB         156 kB
+2026-11-03T13:02:48.873Z  ├ ƒ /manage/[token]                      4.34 kB         127 kB
+2026-11-03T13:02:48.873Z  ├ ƒ /manage/[token]/edit                 3.99 kB         135 kB
+2026-11-03T13:02:48.873Z  ├ ƒ /publish                             6.13 kB         150 kB
+2026-11-03T13:02:48.874Z  ├ ƒ /publish/success                     180 B          94.2 kB
+2026-11-03T13:02:48.874Z  ├ ○ /robots.txt                          0 B                0 B
+2026-11-03T13:02:48.874Z  ├ ○ /sitemap.xml                         0 B                0 B
+2026-11-03T13:02:48.874Z  └ ƒ /verify/[token]                      3.52 kB         105 kB
+2026-11-03T13:02:48.874Z  + First Load JS shared by all            87.2 kB
+2026-11-03T13:02:48.874Z  ├ chunks/117-914691ba268681d8.js       31.6 kB
+2026-11-03T13:02:48.874Z  ├ chunks/fd9d1056-c1f4ccaaac4ce76c.js  53.6 kB
+2026-11-03T13:02:48.874Z  └ other shared chunks (total)          1.96 kB
+2026-11-03T13:02:48.874Z  
+2026-11-03T13:02:48.874Z  
+2026-11-03T13:02:48.874Z  ○  (Static)   prerendered as static content
+2026-11-03T13:02:48.875Z  ƒ  (Dynamic)  server-rendered on demand
+2026-11-03T13:02:48.875Z  
+2026-11-03T13:02:49.390Z  Traced Next.js server files in: 69.807ms
+2026-11-03T13:02:49.703Z  Created all serverless functions in: 312.348ms
+2026-11-03T13:02:49.714Z  Collected static files (public/, static/, .next/static): 5.986ms
+2026-11-03T13:02:49.826Z  Build Completed in /vercel/output [36s]
+2026-11-03T13:02:49.849Z  Deploying outputs...
+2026-11-03T13:02:56.264Z  Deployment completed
+2026-11-03T13:02:56.267Z  Creating build cache...
+2026-11-03T13:03:05.001Z  Created build cache: 9s
+2026-11-03T13:03:05.001Z  Uploading build cache [115.77 MB]
+2026-11-03T13:03:07.869Z  Build cache uploaded: 2.868s
+status	● Ready

@@ -9,10 +9,12 @@ const DEMO_VERIFY_TOKEN = "seed-demo-verify-token"
 export const DEMO_TOKENS = { DEMO_MANAGE_TOKEN, DEMO_VERIFY_TOKEN }
 
 async function main() {
-  await prisma.inquiry.deleteMany()
-  await prisma.cooperation.deleteMany()
-  await prisma.demand.deleteMany()
-  await prisma.rateLimit.deleteMany()
+  // 幂等保护：已有数据则跳过，便于部署期安全调用
+  const existing = await prisma.demand.count()
+  if (existing > 0) {
+    console.log(`数据库已有 ${existing} 条需求，跳过种子写入。`)
+    return
+  }
 
   const now = Date.now()
 const daysAgo = (d: number) => new Date(now - d * 86_400_000)
