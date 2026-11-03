@@ -31,6 +31,10 @@ next-env.d.ts
 # screenshots
 /shots/
 
+# build logs
+bl*.txt
+buildlog*.txt
+
 .env*
 
 # vercel local state
