@@ -17,7 +17,6 @@ import { EmptyState } from "@/components/EmptyState"
 import { getMessages } from "@/i18n/messages"
 import { getLocale } from "@/i18n/server"
 import {
-  CATEGORY_LABELS,
   DEMAND_CATEGORIES,
   siteConfig,
   type DemandCategory,
@@ -43,6 +42,16 @@ export default async function HomePage() {
     take: 6,
     include: { _count: { select: { inquiries: true } } },
   })
+
+  const [publishedCount, inquiryCount] = await Promise.all([
+    prisma.demand.count({ where: { status: "published" } }),
+    prisma.inquiry.count(),
+  ])
+  const stats = [
+    { label: t.home.stats.published, value: publishedCount },
+    { label: t.home.stats.inquiries, value: inquiryCount },
+    { label: t.home.stats.categories, value: DEMAND_CATEGORIES.length },
+  ]
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -92,6 +101,18 @@ export default async function HomePage() {
               </Button>
             </div>
           </div>
+         <dl className="mt-12 grid grid-cols-3 gap-4 border-t border-primary-foreground/15 pt-8 sm:mt-16">
+           {stats.map((stat) => (
+             <div key={stat.label} className="text-center sm:text-left">
+               <dt className="text-xs text-primary-foreground/70 sm:text-sm">
+                 {stat.label}
+               </dt>
+               <dd className="mt-1 text-2xl font-bold text-primary-foreground sm:text-3xl">
+                 {stat.value}
+               </dd>
+             </div>
+           ))}
+         </dl>
         </div>
       </section>
 
@@ -110,13 +131,16 @@ export default async function HomePage() {
               <Link
                 key={category}
                 href={`/demands?category=${category}`}
-                className="group flex items-center gap-3 rounded-lg border border-border bg-white p-5 shadow-sm transition-all hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group flex flex-col gap-3 rounded-lg border border-border bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/5 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                   <Icon className="h-5 w-5" />
                 </span>
                 <span className="text-sm font-semibold text-foreground">
-                  {CATEGORY_LABELS[locale][category]}
+                  {t.home.cat[category].label}
+                </span>
+                <span className="text-xs leading-relaxed text-muted-foreground">
+                  {t.home.cat[category].desc}
                 </span>
               </Link>
             )
@@ -129,8 +153,11 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-xl font-bold text-foreground sm:text-2xl">
+             <h2 className="flex items-center gap-2.5 text-xl font-bold text-foreground sm:text-2xl">
                 {t.home.latestTitle}
+               <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                 {publishedCount}
+               </span>
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 {t.home.latestDesc}

@@ -79,13 +79,13 @@ export default async function DemandDetailPage({ params }: { params: Params }) {
     datePosted: demand.createdAt.toISOString(),
   }
 
-  const specs: { label: string; value: string | null; icon: typeof MapPin }[] = [
-    { label: t.detail.specs.region, value: demand.region, icon: MapPin },
-    { label: t.detail.specs.category, value: categoryLabel, icon: Layers },
-    { label: t.detail.specs.budget, value: budgetLabel, icon: Wallet },
-    { label: t.detail.specs.time, value: demand.timeRange, icon: CalendarRange },
-    { label: t.detail.specs.resolution, value: demand.resolution, icon: Ruler },
-    { label: t.detail.specs.area, value: demand.area, icon: Ruler },
+const specs: { label: string; value: string | null; icon: typeof MapPin; tone: string }[] = [
+    { label: t.detail.specs.region, value: demand.region, icon: MapPin, tone: "text-sky-600" },
+    { label: t.detail.specs.category, value: categoryLabel, icon: Layers, tone: "text-primary" },
+    { label: t.detail.specs.budget, value: budgetLabel, icon: Wallet, tone: "text-emerald-600" },
+    { label: t.detail.specs.time, value: demand.timeRange, icon: CalendarRange, tone: "text-amber-600" },
+    { label: t.detail.specs.resolution, value: demand.resolution, icon: Ruler, tone: "text-violet-600" },
+    { label: t.detail.specs.area, value: demand.area, icon: Ruler, tone: "text-rose-600" },
   ]
 
   return (
@@ -119,8 +119,11 @@ export default async function DemandDetailPage({ params }: { params: Params }) {
 
           <dl className="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
             {specs.map((spec) => (
-              <div key={spec.label} className="flex items-start gap-3">
-                <spec.icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div
+                key={spec.label}
+                className="flex items-start gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50"
+              >
+                <spec.icon className={`mt-0.5 h-4 w-4 shrink-0 ${spec.tone}`} />
                 <div>
                   <dt className="text-xs text-muted-foreground">{spec.label}</dt>
                   <dd className="mt-0.5 text-sm font-medium text-foreground">

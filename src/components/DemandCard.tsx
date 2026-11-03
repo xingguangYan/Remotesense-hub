@@ -38,7 +38,7 @@ export function DemandCard({
   return (
     <Link
       href={`/demands/${demand.id}`}
-      className="group block rounded-lg border border-border bg-white p-5 shadow-sm transition-all hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group block rounded-lg border border-border bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className="line-clamp-2 text-base font-semibold text-foreground group-hover:text-primary">
@@ -63,7 +63,7 @@ export function DemandCard({
         </span>
       </div>
       {typeof demand._count?.inquiries === "number" && (
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
           {t.common.receivedPrefix} {demand._count.inquiries} {t.common.inquiriesUnit}
         </p>
       )}

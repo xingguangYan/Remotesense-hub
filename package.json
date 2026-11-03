@@ -10,7 +10,8 @@
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "seed": "node --env-file-if-exists=.env --import tsx prisma/seed.ts"
+    "seed": "node --env-file-if-exists=.env --import tsx prisma/seed.ts",
+    "dev:gen": "prisma generate --schema prisma/schema.dev.prisma"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

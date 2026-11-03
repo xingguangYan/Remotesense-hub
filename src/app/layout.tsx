@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import { Toaster } from "sonner"
 import { Navbar } from "@/components/Navbar"
 import { Footer } from "@/components/Footer"
+import { SupportAuthor } from "@/components/SupportAuthor"
 import { LocaleProvider } from "@/i18n/LocaleProvider"
 import { getLocale } from "@/i18n/server"
 import { getMessages } from "@/i18n/messages"
@@ -35,6 +36,7 @@ export default function RootLayout({
         <LocaleProvider locale={locale} messages={messages}>
           <Navbar />
           <main className="flex-1">{children}</main>
+          <SupportAuthor />
           <Footer />
           <Toaster richColors position="top-center" />
         </LocaleProvider>

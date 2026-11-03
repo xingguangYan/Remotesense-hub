@@ -41,10 +41,23 @@ const zh = {
   },
   home: {
     heroTitle: "发布遥感需求，精准对接专业服务",
+stats: {
+  published: "已验证需求",
+  inquiries: "服务方意向",
+  categories: "需求类型",
+},
     heroDesc:
       " 是一个免注册的遥感需求撮合平台：影像获取、数据处理、模型训练、变化检测、专题制图，一条需求，多方案比选。",
     categoriesTitle: "需求类型",
     categoriesDesc: "覆盖遥感产业链核心环节，点击直达对应需求大厅",
+cat: {
+  IMAGE_ACQUISITION: { label: "影像获取", desc: "高分卫星与航空影像采集、正射纠正与镶嵌分幅交付" },
+  DATA_PROCESSING: { label: "数据处理", desc: "辐射与大气校正、融合、分类、反演与时序分析" },
+  MODEL_TRAINING: { label: "模型训练", desc: "目标检测、地物分类、变化检测模型的定制训练与部署" },
+  CHANGE_DETECTION: { label: "变化检测", desc: "双期影像比对、违建识别、生态修复动态监测" },
+  THEMATIC_MAPPING: { label: "专题制图", desc: "统计专题图、监测报告、面向考核与汇报的成图服务" },
+  OTHER: { label: "其他", desc: "数据采购咨询、GIS 集成与定制化遥感应用" },
+},
     latestTitle: "最新需求",
     latestDesc: "仅展示已完成邮件验证的需求，联系方式全程脱敏",
     latestEmptyTitle: "暂时还没有已发布的需求",
@@ -240,6 +253,14 @@ const zh = {
     disclaimer: "免责声明",
     legal: "ICP 备案号占位 · 公安备案占位 · 平台仅提供信息撮合服务",
   },
+ support: {
+    eyebrow: "支持作者",
+    title: "一杯咖啡的温度",
+    desc: "这个平台永久免费。如果它刚好帮到了您，欢迎请作者喝杯咖啡——您的每一份支持，都会变成下一次更新的动力。",
+    qrAlt: "赞赏码",
+    action: "请作者喝杯咖啡",
+    thanks: "感谢您的支持，让平台走得更远。",
+  },
   inquiry: {
     title: "提交服务意向",
     descDirect: "请填写您的联系方式与服务方案，需求方将收到通知。",
@@ -312,10 +333,23 @@ const en = {
   },
   home: {
     heroTitle: "Match your remote sensing demands with the right service providers",
+stats: {
+  published: "Verified demands",
+  inquiries: "Service inquiries",
+  categories: "Demand categories",
+},
     heroDesc:
       " is a registration-free remote sensing demand matching platform: image acquisition, data processing, model training, change detection and thematic mapping — one demand, multiple proposals.",
     categoriesTitle: "Demand Categories",
     categoriesDesc: "Core segments of the remote sensing value chain — click to browse matching demands",
+cat: {
+  IMAGE_ACQUISITION: { label: "Image Acquisition", desc: "High-resolution satellite and aerial imagery capture, orthorectification and mosaic delivery" },
+  DATA_PROCESSING: { label: "Data Processing", desc: "Radiometric and atmospheric correction, fusion, classification, inversion and time-series analysis" },
+  MODEL_TRAINING: { label: "Model Training", desc: "Custom training and deployment of object-detection, land-cover and change-detection models" },
+  CHANGE_DETECTION: { label: "Change Detection", desc: "Bitemporal imagery comparison, illegal-construction identification and ecological monitoring" },
+  THEMATIC_MAPPING: { label: "Thematic Mapping", desc: "Statistical thematic maps, monitoring reports and presentation-ready cartography" },
+  OTHER: { label: "Other", desc: "Data procurement consulting, GIS integration and custom remote sensing applications" },
+},
     latestTitle: "Latest Demands",
     latestDesc: "Only email-verified demands are listed; contact details stay masked",
     latestEmptyTitle: "No published demands yet",
@@ -510,6 +544,14 @@ const en = {
     quickLinks: "Quick links",
     disclaimer: "Disclaimer",
     legal: "ICP placeholder · NRS placeholder · information matching service only",
+  },
+ support: {
+    eyebrow: "Support the author",
+    title: "The Warmth of a Coffee",
+    desc: "This platform is free forever. If it happened to help you, feel free to buy the author a coffee — every bit of your support fuels the next improvement.",
+    qrAlt: "Donation QR code",
+    action: "Buy the author a coffee",
+    thanks: "Thank you for keeping this platform going.",
   },
   inquiry: {
     title: "Submit a service inquiry",
