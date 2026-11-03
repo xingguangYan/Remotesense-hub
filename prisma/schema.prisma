@@ -8,10 +8,11 @@ generator client {
 
 datasource db {
   // 生产与本地统一使用 postgresql
-  // Vercel Prisma Postgres 连接串请使用 postgresql:// 开头
-  // 形如：postgresql://user:pass@host:5432/db?schema=public
+  // Vercel Prisma Postgres 集成的 DATABASE_URL 是 prisma+postgres://（加速连接），
+  // Prisma 5.x 不识别该 scheme，因此用直连串 DATABASE_POSTGRES_URL（postgresql://）。
+  // 本地开发：在 .env 里设置 DATABASE_POSTGRES_URL=postgresql://...
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_POSTGRES_URL")
 }
 
 /// 需求

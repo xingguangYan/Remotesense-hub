@@ -30,3 +30,8 @@ next-env.d.ts
 
 # screenshots
 /shots/
+
+.env*
+
+# vercel local state
+/.vercel
