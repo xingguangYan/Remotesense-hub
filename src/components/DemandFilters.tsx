@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { Search, X } from "lucide-react"
+import { useTranslations } from "@/i18n/LocaleProvider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
@@ -16,6 +17,7 @@ export function DemandFilters() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const { t, locale } = useTranslations()
 
   function update(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString())
@@ -36,17 +38,17 @@ export function DemandFilters() {
             htmlFor="filter-category"
             className="mb-1 block text-xs font-medium text-muted-foreground"
           >
-            需求类型
+            {t.demands.filters.category}
           </label>
           <Select
             id="filter-category"
             defaultValue={searchParams.get("category") || ""}
             onChange={(e) => update("category", e.target.value)}
           >
-            <option value="">全部类型</option>
+            <option value="">{t.demands.filters.allCategories}</option>
             {DEMAND_CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {CATEGORY_LABELS[c]}
+                {CATEGORY_LABELS[locale][c]}
               </option>
             ))}
           </Select>
@@ -56,17 +58,17 @@ export function DemandFilters() {
             htmlFor="filter-budget"
             className="mb-1 block text-xs font-medium text-muted-foreground"
           >
-            预算区间
+            {t.demands.filters.budget}
           </label>
           <Select
             id="filter-budget"
             defaultValue={searchParams.get("budget") || ""}
             onChange={(e) => update("budget", e.target.value)}
           >
-            <option value="">全部预算</option>
+            <option value="">{t.demands.filters.allBudgets}</option>
             {BUDGETS.map((b) => (
               <option key={b} value={b}>
-                {BUDGET_LABELS[b]}
+                {BUDGET_LABELS[locale][b]}
               </option>
             ))}
           </Select>
@@ -76,7 +78,7 @@ export function DemandFilters() {
             htmlFor="filter-region"
             className="mb-1 block text-xs font-medium text-muted-foreground"
           >
-            目标区域
+            {t.demands.filters.region}
           </label>
           <form
             className="flex gap-2"
@@ -90,19 +92,19 @@ export function DemandFilters() {
               id="filter-region"
               name="region"
               defaultValue={searchParams.get("region") || ""}
-              placeholder="输入区域关键词，如「长江中下游」"
+              placeholder={t.demands.filters.regionPlaceholder}
               className="flex-1"
             />
             <Button type="submit" className="shrink-0">
               <Search className="h-4 w-4" />
-              筛选
+              {t.demands.filters.search}
             </Button>
             {searchParams.get("region") && (
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
-                aria-label="清除区域筛选"
+                aria-label={t.demands.filters.clear}
                 onClick={() => update("region", "")}
               >
                 <X className="h-4 w-4" />

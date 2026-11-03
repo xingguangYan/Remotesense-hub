@@ -19,9 +19,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Captcha } from "@/components/Captcha"
+import { useTranslations } from "@/i18n/LocaleProvider"
 import { inquirySchema, type InquiryInput } from "@/lib/validations"
 
-function FieldError({ message }: { message?: string }) {
+function fieldError(message?: string) {
   if (!message) return null
   return (
     <p className="mt-1 flex items-center gap-1 text-xs text-destructive">
@@ -38,6 +39,7 @@ export function InquiryModal({
   demandId: string
   allowDirectContact: boolean
 }) {
+  const { t } = useTranslations()
   const [open, setOpen] = useState(false)
   const [done, setDone] = useState(false)
   const [captcha, setCaptcha] = useState("")
@@ -64,13 +66,18 @@ export function InquiryModal({
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data?.error?.message || "提交失败，请稍后重试")
+        const code = data?.error?.code as keyof typeof t.errors | undefined
+        throw new Error(
+          code && code in t.errors
+            ? t.errors[code]
+            : data?.error?.message || t.errors.fallback,
+        )
       }
       setDone(true)
       reset()
       setCaptcha("")
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "提交失败，请稍后重试")
+      toast.error(error instanceof Error ? error.message : t.errors.fallback)
       setCaptcha("")
       setCaptchaKey((k) => k + 1)
     } finally {
@@ -85,12 +92,14 @@ export function InquiryModal({
     }
   }
 
+  const f = t.inquiry.fields
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button size="lg" className="w-full sm:w-auto">
           <Handshake className="h-4 w-4" />
-          我对这个需求感兴趣
+          {t.detail.inquiryButton}
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -98,25 +107,21 @@ export function InquiryModal({
           <div className="py-4 text-center">
             <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600" />
             <h3 className="mt-4 text-lg font-semibold text-foreground">
-              意向已提交
+              {t.inquiry.successTitle}
             </h3>
             <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-              {allowDirectContact
-                ? "需求方将收到邮件通知并通过您留下的联系方式与您对接。"
-                : "该需求方未开启直接联系，您的意向将由平台人工转达，请保持电话畅通。"}
+              {allowDirectContact ? t.inquiry.successDirect : t.inquiry.successRelay}
             </p>
             <Button className="mt-6" onClick={() => handleOpenChange(false)}>
-              知道了
+              {t.common.confirm}
             </Button>
           </div>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>提交服务意向</DialogTitle>
+              <DialogTitle>{t.inquiry.title}</DialogTitle>
               <DialogDescription>
-                {allowDirectContact
-                  ? "请填写您的联系方式与服务方案，需求方将收到通知。"
-                  : "该需求方未开启「允许直接联系」，您的意向将由平台人工转达。"}
+                {allowDirectContact ? t.inquiry.descDirect : t.inquiry.descRelay}
               </DialogDescription>
             </DialogHeader>
             <form
@@ -127,19 +132,19 @@ export function InquiryModal({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="inquiry-name">
-                    您的称呼 <span className="text-destructive">*</span>
+                    {f.name} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="inquiry-name"
                     className="mt-1.5"
-                    placeholder="如：张经理"
+                    placeholder={f.namePlaceholder}
                     {...register("name")}
                   />
-                  <FieldError message={errors.name?.message} />
+                  {fieldError(errors.name?.message)}
                 </div>
                 <div>
                   <Label htmlFor="inquiry-phone">
-                    手机号 <span className="text-destructive">*</span>
+                    {f.phone} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="inquiry-phone"
@@ -147,37 +152,37 @@ export function InquiryModal({
                     inputMode="numeric"
                     maxLength={11}
                     className="mt-1.5"
-                    placeholder="中国大陆 11 位手机号"
+                    placeholder={t.publish.fields.phonePlaceholder}
                     {...register("phone")}
                   />
-                  <FieldError message={errors.phone?.message} />
+                  {fieldError(errors.phone?.message)}
                 </div>
               </div>
               <div>
                 <Label htmlFor="inquiry-email">
-                  邮箱 <span className="text-destructive">*</span>
+                  {f.email} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="inquiry-email"
                   type="email"
                   className="mt-1.5"
-                  placeholder="您的工作邮箱"
+                  placeholder={f.emailPlaceholder}
                   {...register("email")}
                 />
-                <FieldError message={errors.email?.message} />
+                {fieldError(errors.email?.message)}
               </div>
               <div>
                 <Label htmlFor="inquiry-message">
-                  服务方案简述 <span className="text-destructive">*</span>
+                  {f.message} <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
                   id="inquiry-message"
                   rows={4}
                   className="mt-1.5"
-                  placeholder="如：具备同类项目经验，可在 45 天内交付，初步报价…"
+                  placeholder={f.messagePlaceholder}
                   {...register("message")}
                 />
-                <FieldError message={errors.message?.message} />
+                {fieldError(errors.message?.message)}
               </div>
               <Captcha key={captchaKey} value={captcha} onChange={setCaptcha} />
               <DialogFooter className="mt-2">
@@ -187,10 +192,10 @@ export function InquiryModal({
                   onClick={() => handleOpenChange(false)}
                   disabled={submitting}
                 >
-                  取消
+                  {t.common.cancel}
                 </Button>
                 <Button type="submit" disabled={submitting}>
-                  {submitting ? "提交中…" : "提交意向"}
+                  {submitting ? t.common.submitting : t.inquiry.submit}
                 </Button>
               </DialogFooter>
             </form>

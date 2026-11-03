@@ -5,8 +5,11 @@ import { DemandCard } from "@/components/DemandCard"
 import { DemandFilters } from "@/components/DemandFilters"
 import { EmptyState } from "@/components/EmptyState"
 import { Button } from "@/components/ui/button"
+import { getMessages } from "@/i18n/messages"
+import { getLocale } from "@/i18n/server"
 import { BUDGETS, DEMAND_CATEGORIES } from "@/lib/constants"
 import { prisma } from "@/lib/prisma"
+import { cn } from "@/lib/utils"
 
 const PAGE_SIZE = 12
 
@@ -22,6 +25,8 @@ export default async function DemandsPage({
 }: {
   searchParams: SearchParams
 }) {
+  const locale = getLocale()
+  const t = getMessages(locale)
   const page = Math.max(1, parseInt(searchParams.page || "1", 10) || 1)
 
   const where = {
@@ -66,15 +71,13 @@ export default async function DemandsPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-            需求大厅
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            共 {total} 条已验证需求 · 按发布时间倒序 · 联系方式已脱敏
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+          {t.demands.title}
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t.demands.subtitle.replace("{count}", String(total))}
+        </p>
       </div>
 
       <div className="mt-6">
@@ -86,21 +89,19 @@ export default async function DemandsPage({
       <div className="mt-6">
         {demands.length === 0 ? (
           <EmptyState
-            title={hasFilters ? "没有符合筛选条件的需求" : "暂时还没有已发布的需求"}
+            title={hasFilters ? t.demands.emptyFilteredTitle : t.demands.emptyTitle}
             description={
-              hasFilters
-                ? "试试放宽筛选条件，或发布一条新的需求。"
-                : "成为第一个发布遥感需求的人。"
+              hasFilters ? t.demands.emptyFilteredDesc : t.demands.emptyDesc
             }
             action={
               <div className="flex gap-3">
                 {hasFilters && (
                   <Button asChild variant="outline">
-                    <Link href="/demands">清除筛选</Link>
+                    <Link href="/demands">{t.demands.filters.clear}</Link>
                   </Button>
                 )}
                 <Button asChild>
-                  <Link href="/publish">发布需求</Link>
+                  <Link href="/publish">{t.common.publishCta}</Link>
                 </Button>
               </div>
             }
@@ -108,7 +109,7 @@ export default async function DemandsPage({
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {demands.map((demand) => (
-              <DemandCard key={demand.id} demand={demand} />
+              <DemandCard key={demand.id} demand={demand} t={t} locale={locale} />
             ))}
           </div>
         )}
@@ -116,24 +117,28 @@ export default async function DemandsPage({
 
       {totalPages > 1 && (
         <div className="mt-10 flex items-center justify-center gap-3">
-          <Button asChild variant="outline" size="sm" aria-label="上一页">
+          <Button asChild variant="outline" size="sm">
             <Link
               href={pageHref(page - 1)}
-              className={page === 1 ? "pointer-events-none opacity-50" : ""}
+              aria-label={t.demands.prev}
+              className={cn(page === 1 && "pointer-events-none opacity-50")}
             >
               <ArrowLeft className="h-4 w-4" />
-              上一页
+              {t.demands.prev}
             </Link>
           </Button>
           <span className="text-sm text-muted-foreground">
-            第 {page} / {totalPages} 页
+            {t.demands.pageOf
+              .replace("{page}", String(page))
+              .replace("{total}", String(totalPages))}
           </span>
-          <Button asChild variant="outline" size="sm" aria-label="下一页">
+          <Button asChild variant="outline" size="sm">
             <Link
               href={pageHref(page + 1)}
-              className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+              aria-label={t.demands.next}
+              className={cn(page === totalPages && "pointer-events-none opacity-50")}
             >
-              下一页
+              {t.demands.next}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>

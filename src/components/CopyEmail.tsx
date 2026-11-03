@@ -3,18 +3,20 @@
 import { useState } from "react"
 import { Check, Copy } from "lucide-react"
 import { toast } from "sonner"
+import { useTranslations } from "@/i18n/LocaleProvider"
 
 export function CopyEmail({ email }: { email: string }) {
+  const { t } = useTranslations()
   const [copied, setCopied] = useState(false)
 
   async function copy() {
     try {
       await navigator.clipboard.writeText(email)
       setCopied(true)
-      toast.success("邮箱已复制到剪贴板")
+      toast.success(t.common.copied)
       setTimeout(() => setCopied(false), 1500)
     } catch {
-      toast.error("复制失败，请手动选择邮箱地址")
+      toast.error(t.common.copyFailed)
     }
   }
 
@@ -29,7 +31,7 @@ export function CopyEmail({ email }: { email: string }) {
       ) : (
         <Copy className="h-3 w-3" />
       )}
-      {copied ? "已复制" : "复制"}
+      {copied ? t.common.copied : t.common.copy}
     </button>
   )
 }

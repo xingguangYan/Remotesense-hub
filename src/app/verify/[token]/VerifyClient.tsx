@@ -4,19 +4,21 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { CheckCircle2, Loader2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTranslations } from "@/i18n/LocaleProvider"
 
 type Status = "loading" | "success" | "error"
 
 export function VerifyClient({ token }: { token: string }) {
+  const { t } = useTranslations()
   const [status, setStatus] = useState<Status>("loading")
-  const [message, setMessage] = useState("正在验证…")
-
-  // dev StrictMode 会导致 effect 重复执行，用 ref 保证验证只发一次
+  const [message, setMessage] = useState(t.verify.verifying)
   const calledRef = useRef(false)
 
   useEffect(() => {
+    // dev StrictMode 会导致 effect 重复执行，用 ref 保证验证只发一次
     if (calledRef.current) return
     calledRef.current = true
+
     void (async () => {
       try {
         const res = await fetch("/api/verify", {
@@ -27,21 +29,28 @@ export function VerifyClient({ token }: { token: string }) {
         const data = await res.json()
         if (res.ok) {
           setStatus("success")
-          setMessage(`「${data.title}」已通过验证，现在公开展示在需求大厅。`)
+          setMessage(
+            t.verify.successDesc.replace("{title}", String(data.title || "")),
+          )
         } else {
           setStatus("error")
-          setMessage(data?.error?.message || "验证失败，链接可能已失效。")
+          const code = data?.error?.code as keyof typeof t.errors | undefined
+          setMessage(
+            code && code in t.errors
+              ? t.errors[code]
+              : data?.error?.message || t.verify.networkError,
+          )
         }
       } catch {
         setStatus("error")
-        setMessage("网络错误，请稍后重试或重新发布需求。")
+        setMessage(t.verify.networkError)
       }
     })()
-  }, [token])
+  }, [token, t])
 
   if (status === "loading") {
     return (
-      <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-20 sm:py-28 text-center">
+      <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-20 text-center sm:py-28">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
         <p className="mt-6 text-sm text-muted-foreground">{message}</p>
       </div>
@@ -55,17 +64,17 @@ export function VerifyClient({ token }: { token: string }) {
           <CheckCircle2 className="h-8 w-8 text-emerald-600" />
         </span>
         <h1 className="mt-6 text-xl font-bold text-foreground sm:text-2xl">
-          需求验证成功
+          {t.verify.successTitle}
         </h1>
         <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground">
           {message}
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button asChild>
-            <Link href="/demands">前往需求大厅</Link>
+            <Link href="/demands">{t.verify.goToDemands}</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/">返回首页</Link>
+            <Link href="/">{t.verify.backHome}</Link>
           </Button>
         </div>
       </div>
@@ -78,14 +87,14 @@ export function VerifyClient({ token }: { token: string }) {
         <XCircle className="h-8 w-8 text-red-600" />
       </span>
       <h1 className="mt-6 text-xl font-bold text-foreground sm:text-2xl">
-        验证未通过
+        {t.verify.errorTitle}
       </h1>
       <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground">
         {message}
       </p>
       <div className="mt-8">
         <Button asChild>
-          <Link href="/publish">重新发布需求</Link>
+          <Link href="/publish">{t.verify.retry}</Link>
         </Button>
       </div>
     </div>

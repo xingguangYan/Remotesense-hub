@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { useTranslations } from "@/i18n/LocaleProvider"
 
 /** 管理页的操作区：编辑入口 + 关闭需求（带确认弹窗） */
 export function ManageControls({
@@ -24,6 +25,7 @@ export function ManageControls({
   closed: boolean
 }) {
   const router = useRouter()
+  const { t } = useTranslations()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [closing, setClosing] = useState(false)
 
@@ -35,13 +37,18 @@ export function ManageControls({
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data?.error?.message || "操作失败，请稍后重试")
+        const code = data?.error?.code as keyof typeof t.errors | undefined
+        throw new Error(
+          code && code in t.errors
+            ? t.errors[code]
+            : data?.error?.message || t.errors.fallback,
+        )
       }
-      toast.success("需求已关闭，不再对服务方展示。")
+      toast.success(t.manage.toastClosed)
       setConfirmOpen(false)
       router.refresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "操作失败，请稍后重试")
+      toast.error(error instanceof Error ? error.message : t.errors.fallback)
     } finally {
       setClosing(false)
     }
@@ -53,7 +60,7 @@ export function ManageControls({
         <Button asChild variant="outline" size="lg">
           <Link href={`/manage/${manageToken}/edit`}>
             <Pencil className="h-4 w-4" />
-            编辑需求
+            {t.manage.edit}
           </Link>
         </Button>
       )}
@@ -65,22 +72,18 @@ export function ManageControls({
           onClick={() => setConfirmOpen(true)}
         >
           <XCircle className="h-4 w-4" />
-          关闭需求
+          {t.manage.close}
         </Button>
       )}
       {closed && (
-        <p className="text-sm text-muted-foreground">
-          该需求已关闭，不再展示在需求大厅。如需重新开放，请联系平台商务邮箱。
-        </p>
+        <p className="text-sm text-muted-foreground">{t.manage.closedNotice}</p>
       )}
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>关闭这条需求？</DialogTitle>
-            <DialogDescription>
-              关闭后该需求将从需求大厅下线，服务方无法再提交意向。此操作不可自行恢复。
-            </DialogDescription>
+            <DialogTitle>{t.manage.closeConfirmTitle}</DialogTitle>
+            <DialogDescription>{t.manage.closeConfirmDesc}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
             <Button
@@ -89,7 +92,7 @@ export function ManageControls({
               onClick={() => setConfirmOpen(false)}
               disabled={closing}
             >
-              取消
+              {t.common.cancel}
             </Button>
             <Button
               type="button"
@@ -97,7 +100,7 @@ export function ManageControls({
               onClick={closeDemand}
               disabled={closing}
             >
-              {closing ? "关闭中…" : "确认关闭"}
+              {closing ? t.common.saving : t.manage.closeConfirm}
             </Button>
           </DialogFooter>
         </DialogContent>

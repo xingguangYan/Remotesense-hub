@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { useTranslations } from "@/i18n/LocaleProvider"
 import {
   BUDGETS,
   BUDGET_LABELS,
@@ -33,7 +34,7 @@ type InitialData = {
   description: string
 }
 
-function FieldError({ message }: { message?: string }) {
+function fieldError(message?: string) {
   if (!message) return null
   return (
     <p className="mt-1 flex items-center gap-1 text-xs text-destructive">
@@ -51,6 +52,7 @@ export function ManageEditForm({
   initialData: InitialData
 }) {
   const router = useRouter()
+  const { t, locale } = useTranslations()
   const [submitting, setSubmitting] = useState(false)
 
   const {
@@ -81,17 +83,24 @@ export function ManageEditForm({
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data?.error?.message || "保存失败，请稍后重试")
+        const code = data?.error?.code as keyof typeof t.errors | undefined
+        throw new Error(
+          code && code in t.errors
+            ? t.errors[code]
+            : data?.error?.message || t.errors.fallback,
+        )
       }
-      toast.success("需求已更新。")
+      toast.success(t.manage.toastUpdated)
       router.push(`/manage/${manageToken}`)
       router.refresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "保存失败，请稍后重试")
+      toast.error(error instanceof Error ? error.message : t.errors.fallback)
     } finally {
       setSubmitting(false)
     }
   }
+
+  const f = t.publish.fields
 
   return (
     <form
@@ -101,32 +110,32 @@ export function ManageEditForm({
     >
       <div>
         <Label htmlFor="title">
-          需求标题 <span className="text-destructive">*</span>
+          {f.title} <span className="text-destructive">*</span>
         </Label>
         <Input id="title" className="mt-1.5" {...register("title")} />
-        <FieldError message={errors.title?.message} />
+        {fieldError(errors.title?.message)}
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <Label htmlFor="category">
-            需求类型 <span className="text-destructive">*</span>
+            {f.category} <span className="text-destructive">*</span>
           </Label>
           <Select id="category" className="mt-1.5" {...register("category")}>
             {DEMAND_CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {CATEGORY_LABELS[c]}
+                {CATEGORY_LABELS[locale][c]}
               </option>
             ))}
           </Select>
-          <FieldError message={errors.category?.message} />
+          {fieldError(errors.category?.message)}
         </div>
         <div>
-          <Label htmlFor="budget">预算区间</Label>
+          <Label htmlFor="budget">{f.budget}</Label>
           <Select id="budget" className="mt-1.5" {...register("budget")}>
-            <option value="">面议 / 不公开</option>
+            <option value="">{f.budgetPlaceholder}</option>
             {BUDGETS.map((b) => (
               <option key={b} value={b}>
-                {BUDGET_LABELS[b]}
+                {BUDGET_LABELS[locale][b]}
               </option>
             ))}
           </Select>
@@ -134,31 +143,31 @@ export function ManageEditForm({
       </div>
       <div>
         <Label htmlFor="region">
-          目标区域 <span className="text-destructive">*</span>
+          {f.region} <span className="text-destructive">*</span>
         </Label>
         <Input id="region" className="mt-1.5" {...register("region")} />
-        <FieldError message={errors.region?.message} />
+        {fieldError(errors.region?.message)}
       </div>
       <div className="grid gap-5 sm:grid-cols-3">
         <div>
-          <Label htmlFor="resolution">分辨率要求</Label>
+          <Label htmlFor="resolution">{f.resolution}</Label>
           <Input id="resolution" className="mt-1.5" {...register("resolution")} />
         </div>
         <div>
-          <Label htmlFor="area">面积 / 范围</Label>
+          <Label htmlFor="area">{f.area}</Label>
           <Input id="area" className="mt-1.5" {...register("area")} />
         </div>
         <div>
           <Label htmlFor="timeRange">
-            时间要求 <span className="text-destructive">*</span>
+            {f.time} <span className="text-destructive">*</span>
           </Label>
           <Input id="timeRange" className="mt-1.5" {...register("timeRange")} />
-          <FieldError message={errors.timeRange?.message} />
+          {fieldError(errors.timeRange?.message)}
         </div>
       </div>
       <div>
         <Label htmlFor="description">
-          需求详细描述 <span className="text-destructive">*</span>
+          {f.description} <span className="text-destructive">*</span>
         </Label>
         <Textarea
           id="description"
@@ -166,10 +175,10 @@ export function ManageEditForm({
           className="mt-1.5"
           {...register("description")}
         />
-        <FieldError message={errors.description?.message} />
+        {fieldError(errors.description?.message)}
       </div>
       <p className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
-        注意：为防止冒名修改，联系方式（手机号 / 邮箱）提交后不可自行更改，如需修改请联系平台商务邮箱。
+        {t.manage.contactImmutableNotice}
       </p>
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <Button
@@ -178,10 +187,10 @@ export function ManageEditForm({
           onClick={() => router.push(`/manage/${manageToken}`)}
           disabled={submitting}
         >
-          返回管理页
+          {t.manage.backManage}
         </Button>
         <Button type="submit" size="lg" disabled={submitting}>
-          {submitting ? "保存中…" : "保存修改"}
+          {submitting ? t.common.saving : t.manage.editSave}
         </Button>
       </div>
     </form>

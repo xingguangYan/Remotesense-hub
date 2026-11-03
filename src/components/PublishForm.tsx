@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Captcha } from "@/components/Captcha"
+import { useTranslations } from "@/i18n/LocaleProvider"
 import {
   BUDGETS,
   BUDGET_LABELS,
@@ -28,15 +29,16 @@ import {
 } from "@/lib/constants"
 import { demandSchema, type DemandInput } from "@/lib/validations"
 
-const STEPS = ["需求基本信息", "详细描述", "联系方式"]
-
 const STEP_FIELDS: (keyof DemandInput)[][] = [
   ["title", "category", "region", "area", "resolution", "timeRange", "budget"],
   ["description"],
   ["contactName", "contactPhone", "contactEmail", "company"],
 ]
 
-function FieldError({ message }: { message?: string }) {
+function fieldErrorMessage(
+  t: ReturnType<typeof useTranslations>["t"],
+  message: string | undefined,
+) {
   if (!message) return null
   return (
     <p className="mt-1 flex items-center gap-1 text-xs text-destructive">
@@ -46,8 +48,20 @@ function FieldError({ message }: { message?: string }) {
   )
 }
 
+/** 服务端错误体 -> 本地化提示 */
+function serverError(
+  t: ReturnType<typeof useTranslations>["t"],
+  data: { error?: { code?: string; message?: string } } | undefined,
+) {
+  const code = data?.error?.code as keyof typeof t.errors | undefined
+  return code && code in t.errors
+    ? t.errors[code]
+    : data?.error?.message || t.errors.fallback
+}
+
 export function PublishForm() {
   const router = useRouter()
+  const { t, locale } = useTranslations()
   const [step, setStep] = useState(0)
   const [captcha, setCaptcha] = useState("")
   const [captchaKey, setCaptchaKey] = useState(0)
@@ -72,7 +86,7 @@ export function PublishForm() {
 
   async function next() {
     const ok = await trigger(STEP_FIELDS[step])
-    if (ok) setStep((s) => Math.min(s + 1, STEPS.length - 1))
+    if (ok) setStep((s) => Math.min(s + 1, t.publish.steps.length - 1))
   }
 
   function back() {
@@ -90,12 +104,12 @@ export function PublishForm() {
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data?.error?.message || "提交失败，请稍后重试")
+        throw new Error(serverError(t, data))
       }
-      toast.success("提交成功！验证邮件已发送，请查收后完成确认。")
+      toast.success(t.publish.toastSuccess)
       router.push("/publish/success")
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "提交失败，请稍后重试")
+      toast.error(error instanceof Error ? error.message : t.errors.fallback)
       setCaptcha("")
       setCaptchaKey((k) => k + 1)
     } finally {
@@ -103,10 +117,12 @@ export function PublishForm() {
     }
   }
 
+  const f = t.publish.fields
+
   return (
     <div>
       <ol className="mb-8 flex items-center gap-2 sm:gap-4">
-        {STEPS.map((label, i) => (
+        {t.publish.steps.map((label, i) => (
           <li key={label} className="flex flex-1 items-center gap-2">
             <span
               className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
@@ -127,12 +143,17 @@ export function PublishForm() {
             >
               {label}
             </span>
-            {i < STEPS.length - 1 && (
+            {i < t.publish.steps.length - 1 && (
               <span className="ml-auto h-px flex-1 bg-border sm:mx-2" />
             )}
           </li>
         ))}
       </ol>
+      <p className="mb-6 text-xs font-medium text-muted-foreground" aria-live="polite">
+        {t.publish.stepHint
+          .replace("{step}", String(step + 1))
+          .replace("{total}", String(t.publish.steps.length))}
+      </p>
 
       <form
         noValidate
@@ -143,25 +164,25 @@ export function PublishForm() {
           <div className="space-y-5">
             <div>
               <Label htmlFor="title">
-                需求标题 <span className="text-destructive">*</span>
+                {f.title} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="title"
-                placeholder="如：长江中下游水稻种植面积遥感监测"
+                placeholder={f.titlePlaceholder}
                 aria-describedby="title-hint"
                 className="mt-1.5"
                 {...register("title")}
               />
               <p id="title-hint" className="mt-1 text-xs text-muted-foreground">
-                10–80 字，概括需求核心
+                {f.titleHint}
               </p>
-              <FieldError message={errors.title?.message} />
+              {fieldErrorMessage(t, errors.title?.message)}
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
                 <Label htmlFor="category">
-                  需求类型 <span className="text-destructive">*</span>
+                  {f.category} <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   id="category"
@@ -169,27 +190,27 @@ export function PublishForm() {
                   className="mt-1.5"
                   {...register("category")}
                 >
-                  <option value="">请选择需求类型</option>
+                  <option value="">{f.categoryPlaceholder}</option>
                   {DEMAND_CATEGORIES.map((c) => (
                     <option key={c} value={c}>
-                      {CATEGORY_LABELS[c]}
+                      {CATEGORY_LABELS[locale][c]}
                     </option>
                   ))}
                 </Select>
-                <FieldError message={errors.category?.message} />
+                {fieldErrorMessage(t, errors.category?.message)}
               </div>
               <div>
-                <Label htmlFor="budget">预算区间</Label>
+                <Label htmlFor="budget">{f.budget}</Label>
                 <Select
                   id="budget"
                   defaultValue=""
                   className="mt-1.5"
                   {...register("budget")}
                 >
-                  <option value="">面议 / 不公开</option>
+                  <option value="">{f.budgetPlaceholder}</option>
                   {BUDGETS.map((b) => (
                     <option key={b} value={b}>
-                      {BUDGET_LABELS[b]}
+                      {BUDGET_LABELS[locale][b]}
                     </option>
                   ))}
                 </Select>
@@ -198,47 +219,47 @@ export function PublishForm() {
 
             <div>
               <Label htmlFor="region">
-                目标区域 <span className="text-destructive">*</span>
+                {f.region} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="region"
-                placeholder="如：长江中下游 / 华东某地级市全域"
+                placeholder={f.regionPlaceholder}
                 className="mt-1.5"
                 {...register("region")}
               />
-              <FieldError message={errors.region?.message} />
+              {fieldErrorMessage(t, errors.region?.message)}
             </div>
 
             <div className="grid gap-5 sm:grid-cols-3">
               <div>
-                <Label htmlFor="resolution">分辨率要求</Label>
+                <Label htmlFor="resolution">{f.resolution}</Label>
                 <Input
                   id="resolution"
-                  placeholder="如：0.5m / 10m"
+                  placeholder={f.resolutionPlaceholder}
                   className="mt-1.5"
                   {...register("resolution")}
                 />
               </div>
               <div>
-                <Label htmlFor="area">面积 / 范围</Label>
+                <Label htmlFor="area">{f.area}</Label>
                 <Input
                   id="area"
-                  placeholder="如：约 12000 平方公里"
+                  placeholder={f.areaPlaceholder}
                   className="mt-1.5"
                   {...register("area")}
                 />
               </div>
               <div>
                 <Label htmlFor="timeRange">
-                  时间要求 <span className="text-destructive">*</span>
+                  {f.time} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="timeRange"
-                  placeholder="如：2026 年 Q2 前交付"
+                  placeholder={f.timePlaceholder}
                   className="mt-1.5"
                   {...register("timeRange")}
                 />
-                <FieldError message={errors.timeRange?.message} />
+                {fieldErrorMessage(t, errors.timeRange?.message)}
               </div>
             </div>
           </div>
@@ -247,20 +268,20 @@ export function PublishForm() {
         {step === 1 && (
           <div>
             <Label htmlFor="description">
-              需求详细描述 <span className="text-destructive">*</span>
+              {f.description} <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="description"
               rows={10}
               aria-describedby="description-hint"
-              placeholder="请描述需求背景、数据要求、成果形式、验收标准、交付节点等，50–2000 字"
+              placeholder={f.descriptionPlaceholder}
               className="mt-1.5"
               {...register("description")}
             />
             <p id="description-hint" className="mt-1 text-xs text-muted-foreground">
-              50–2000 字。描述越清晰，越容易匹配到合适的服务方。
+              {f.descriptionHint}
             </p>
-            <FieldError message={errors.description?.message} />
+            {fieldErrorMessage(t, errors.description?.message)}
           </div>
         )}
 
@@ -269,27 +290,27 @@ export function PublishForm() {
             <div className="rounded-md border border-accent/30 bg-accent/5 p-4">
               <p className="flex items-start gap-2 text-sm text-foreground">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                提交后我们会向您的邮箱发送一封验证邮件（含验证链接与管理链接）。完成验证后需求才会公开展示，全程无需注册账号。
+                {t.publish.mailNotice}
               </p>
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
                 <Label htmlFor="contactName">
-                  联系人称呼 <span className="text-destructive">*</span>
+                  {f.contactName} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="contactName"
-                  placeholder="如：王工"
+                  placeholder={f.contactNamePlaceholder}
                   className="mt-1.5"
                   {...register("contactName")}
                 />
-                <FieldError message={errors.contactName?.message} />
+                {fieldErrorMessage(t, errors.contactName?.message)}
               </div>
               <div>
-                <Label htmlFor="company">单位 / 公司</Label>
+                <Label htmlFor="company">{f.company}</Label>
                 <Input
                   id="company"
-                  placeholder="选填"
+                  placeholder={f.companyPlaceholder}
                   className="mt-1.5"
                   {...register("company")}
                 />
@@ -298,31 +319,31 @@ export function PublishForm() {
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
                 <Label htmlFor="contactPhone">
-                  手机号 <span className="text-destructive">*</span>
+                  {f.phone} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="contactPhone"
                   type="tel"
                   inputMode="numeric"
                   maxLength={11}
-                  placeholder="中国大陆 11 位手机号"
+                  placeholder={f.phonePlaceholder}
                   className="mt-1.5"
                   {...register("contactPhone")}
                 />
-                <FieldError message={errors.contactPhone?.message} />
+                {fieldErrorMessage(t, errors.contactPhone?.message)}
               </div>
               <div>
                 <Label htmlFor="contactEmail">
-                  邮箱 <span className="text-destructive">*</span>
+                  {f.email} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="contactEmail"
                   type="email"
-                  placeholder="用于接收验证链接和管理链接"
+                  placeholder={f.emailPlaceholder}
                   className="mt-1.5"
                   {...register("contactEmail")}
                 />
-                <FieldError message={errors.contactEmail?.message} />
+                {fieldErrorMessage(t, errors.contactEmail?.message)}
               </div>
             </div>
             <div className="flex items-start gap-3 rounded-md border border-border bg-muted/40 p-4">
@@ -333,7 +354,7 @@ export function PublishForm() {
                 {...register("allowDirectContact")}
               />
               <label htmlFor="allowDirectContact" className="text-sm text-foreground">
-                允许服务方直接联系我（勾选后服务方可通过平台提交意向并获取您的联系方式；不勾选则意向由平台人工转达）
+                {f.allowDirect}
               </label>
             </div>
             <div>
@@ -346,19 +367,19 @@ export function PublishForm() {
           {step > 0 ? (
             <Button type="button" variant="outline" onClick={back}>
               <ArrowLeft className="h-4 w-4" />
-              上一步
+              {t.publish.prev}
             </Button>
           ) : (
             <span />
           )}
-          {step < STEPS.length - 1 ? (
+          {step < t.publish.steps.length - 1 ? (
             <Button type="button" onClick={next}>
-              下一步
+              {t.publish.next}
               <ArrowRight className="h-4 w-4" />
             </Button>
           ) : (
             <Button type="submit" size="lg" disabled={submitting}>
-              提交并等待邮件验证
+              {submitting ? t.common.submitting : t.publish.submit}
             </Button>
           )}
         </div>
@@ -367,10 +388,8 @@ export function PublishForm() {
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>提交前确认</DialogTitle>
-            <DialogDescription>
-              您填写的联系方式将用于需求对接，请确保真实有效。提交后验证邮件将发送至您填写的邮箱。
-            </DialogDescription>
+            <DialogTitle>{t.publish.confirmTitle}</DialogTitle>
+            <DialogDescription>{t.publish.confirmDesc}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2">
             <Button
@@ -379,14 +398,14 @@ export function PublishForm() {
               onClick={() => setConfirmOpen(false)}
               disabled={submitting}
             >
-              返回修改
+              {t.publish.confirmBack}
             </Button>
             <Button
               type="button"
               onClick={handleSubmit(onValid)}
               disabled={submitting}
             >
-              {submitting ? "提交中…" : "确认提交"}
+              {submitting ? t.common.submitting : t.publish.confirmSubmit}
             </Button>
           </DialogFooter>
         </DialogContent>
