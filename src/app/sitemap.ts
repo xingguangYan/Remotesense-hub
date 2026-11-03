@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const demands = await prisma.demand.findMany({
     where: { status: "published" },
     select: { id: true, updatedAt: true },
-  })
+  }).catch(() => [])
 
   const demandPages: MetadataRoute.Sitemap = demands.map((demand) => ({
     url: `${base}/demands/${demand.id}`,

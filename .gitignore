@@ -17,6 +17,8 @@ npm-debug.log*
 
 # env files
 .env
+cred.txt
+*.local
 
 # prisma
 /prisma/*.db
