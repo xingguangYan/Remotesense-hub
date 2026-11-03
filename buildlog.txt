@@ -1,0 +1,2 @@
+Vercel CLI 65.10.0
+status	● Error

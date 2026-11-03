@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "prisma generate && prisma migrate deploy && node -e \"const{PrismaClient}=require('@prisma/client');const p=new PrismaClient();Promise.all([p.demand.count(),p.inquiry.count(),p.cooperation.count()]).then(([d,i,c])=>{console.log('HEALTH_CHECK demands='+d+' inquiries='+i+' cooperations='+c);return p.\\$disconnect()}).catch(e=>{console.error('HEALTH_CHECK_ERROR '+e.message);process.exit(1)})\" && next build",
+  "buildCommand": "prisma generate && prisma migrate deploy && node scripts/health-check.mjs && next build",
   "crons": [
     {
       "path": "/api/health",
