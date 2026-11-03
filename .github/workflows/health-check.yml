@@ -1,0 +1,25 @@
+name: Production Health Check
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check production /api/health
+        run: |
+          echo "Checking https://remotesense-hub.vercel.app/api/health"
+          curl -sS -m 60 \
+            -H "User-Agent: health-check" \
+            -w "\nHTTP_STATUS:%{http_code}\n" \
+            https://remotesense-hub.vercel.app/api/health
+          echo "---- Home page ----"
+          curl -sS -m 60 \
+            -H "User-Agent: health-check" \
+            -o /tmp/home.html \
+            -w "HTTP_STATUS:%{http_code}\n" \
+            https://remotesense-hub.vercel.app/
+          grep -c "发布遥感需求" /tmp/home.html || echo "HOME_TEXT_MISSING"
