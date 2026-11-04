@@ -14,6 +14,39 @@ const optionalText = (max: number) =>
     .optional()
     .transform((v) => (v === undefined ? "" : v.trim()))
 
+/** 手机号：选填，填写时须为 11 位中国大陆号码 */
+const optionalPhone = z
+  .string()
+  .trim()
+  .max(11)
+  .optional()
+  .transform((v) => (v ?? "").trim())
+  .refine((v) => v === "" || phoneRegex.test(v), "请输入有效的中国大陆手机号（11 位）")
+
+/** 邮箱：选填，填写时须为合法邮箱 */
+const optionalEmail = z
+  .string()
+  .max(120)
+  .optional()
+  .transform((v) => (v ?? "").trim())
+  .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "请输入有效的邮箱地址")
+
+/** 至少一项联系方式（发布 / 咨询 / 合作通用） */
+function requireOneContact<T extends Record<string, unknown>>(
+  phoneKey: keyof T,
+  emailKey: keyof T,
+) {
+  return (val: T, ctx: z.RefinementCtx) => {
+    if (!val[phoneKey] && !val[emailKey]) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [phoneKey as string],
+        message: "手机号与邮箱至少填写一项",
+      })
+    }
+  }
+}
+
 /** 发布需求：三步表单汇总 */
 export const demandSchema = z.object({
   title: z
@@ -45,19 +78,17 @@ export const demandSchema = z.object({
     .trim()
     .min(2, "请填写联系人称呼")
     .max(30, "称呼过长"),
-  contactPhone: z
-    .string()
-    .trim()
-    .regex(phoneRegex, "请输入有效的中国大陆手机号（11 位）"),
-  contactEmail: z
-    .string()
-    .trim()
-    .email("请输入有效的邮箱地址"),
+  contactPhone: optionalPhone,
+  contactEmail: optionalEmail,
   company: optionalText(100),
   allowDirectContact: z.boolean().default(true),
   captchaAnswer: z.string().min(1, "请输入验证码"),
-})
+}).superRefine(requireOneContact<DemandInputShape>("contactPhone", "contactEmail"))
 export type DemandInput = z.infer<typeof demandSchema>
+type DemandInputShape = {
+  contactPhone: string
+  contactEmail: string
+}
 
 /** 管理链接：编辑需求（联系方式不可改） */
 export const manageEditSchema = z.object({
@@ -79,36 +110,39 @@ export type ManageEditInput = z.infer<typeof manageEditSchema>
 /** 服务方咨询 */
 export const inquirySchema = z.object({
   name: z.string().trim().min(2, "请填写您的称呼").max(30, "称呼过长"),
-  phone: z
-    .string()
-    .trim()
-    .regex(phoneRegex, "请输入有效的中国大陆手机号（11 位）"),
-  email: z.string().trim().email("请输入有效的邮箱地址"),
+  phone: optionalPhone,
+  email: optionalEmail,
   message: z
     .string()
     .trim()
     .min(10, "请简单介绍您的服务方案（10–500 字）")
     .max(500, "服务方案说明过长（500 字以内）"),
   captchaAnswer: z.string().min(1, "请输入验证码"),
-})
+}).superRefine(requireOneContact<InquiryInputShape>("phone", "email"))
 export type InquiryInput = z.infer<typeof inquirySchema>
+type InquiryInputShape = {
+  phone: string
+  email: string
+}
 
 /** 商务合作咨询 */
 export const cooperationSchema = z.object({
   name: z.string().trim().min(2, "请填写您的姓名").max(30, "姓名过长"),
   company: optionalText(100),
-  phone: z
-    .union([z.string().trim().regex(phoneRegex, "请输入有效的中国大陆手机号"), z.literal("")])
-    .optional(),
-  email: z.string().trim().email("请输入有效的邮箱地址"),
+  phone: optionalPhone,
+  email: optionalEmail,
   message: z
     .string()
     .trim()
     .min(10, "请描述您的合作意向（10–1000 字）")
     .max(1000, "合作意向描述过长（1000 字以内）"),
   captchaAnswer: z.string().min(1, "请输入验证码"),
-})
+}).superRefine(requireOneContact<CooperationInputShape>("phone", "email"))
 export type CooperationInput = z.infer<typeof cooperationSchema>
+type CooperationInputShape = {
+  phone: string
+  email: string
+}
 
 export const verifyTokenSchema = z.object({
   token: z.string().min(16, "验证链接无效"),

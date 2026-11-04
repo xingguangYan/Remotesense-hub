@@ -9,10 +9,8 @@ import {
   demandSchema,
 } from "@/lib/validations"
 import { sendEmail } from "@/lib/email/client"
-import { verificationEmailHtml } from "@/lib/email/templates"
-import { BUDGETS, DEMAND_CATEGORIES } from "@/lib/constants"
-
-const VERIFY_TTL_MS = 24 * 60 * 60 * 1000
+import { newDemandNotifyHtml } from "@/lib/email/templates"
+import { BUDGETS, CATEGORY_LABELS, DEMAND_CATEGORIES, siteConfig } from "@/lib/constants"
 
 /** 已发布需求列表（支持筛选，供客户端分页/筛选调用） */
 export async function GET(req: Request) {
@@ -82,7 +80,6 @@ export async function POST(req: Request) {
     return apiError(400, "SENSITIVE_CONTENT", `提交内容包含敏感词：${hits.join("、")}，请修改后重试`)
   }
 
-  const verifyToken = generateToken()
   const manageToken = generateToken()
   const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
 
@@ -101,32 +98,34 @@ export async function POST(req: Request) {
       contactEmail: parsed.data.contactEmail,
       company: parsed.data.company || null,
       allowDirectContact: parsed.data.allowDirectContact,
-      status: "pending",
-      verifyTokenHash: hashToken(verifyToken),
-      verifyExpiresAt: new Date(Date.now() + VERIFY_TTL_MS),
+      status: "published",
       manageTokenHash: hashToken(manageToken),
     },
   })
 
-  // 邮件发送失败不阻断发布（dev 模式下仅打印日志）
- let emailSent = true
+  // 直接发布模式：不向用户发送任何邮件，仅通知平台管理员（COOPERATION_EMAIL）
   try {
     await sendEmail({
-      to: parsed.data.contactEmail,
-      subject: `【RemoteSense Hub】请验证您发布的需求：${parsed.data.title}`,
-      html: verificationEmailHtml({
+      to: siteConfig.cooperationEmail,
+      subject: `【新需求上线】${parsed.data.title}`,
+      html: newDemandNotifyHtml({
         title: parsed.data.title,
-        verifyUrl: `${base}/verify/${verifyToken}`,
-        manageUrl: `${base}/manage/${manageToken}`,
+        category: CATEGORY_LABELS.zh[parsed.data.category],
+        region: parsed.data.region,
+        budget: parsed.data.budget || null,
+        contactName: parsed.data.contactName,
+        contactPhone: parsed.data.contactPhone,
+        contactEmail: parsed.data.contactEmail,
+        demandUrl: `${base}/demands/${demand.id}`,
+        adminUrl: `${base}/admin`,
       }),
     })
   } catch (error) {
-    console.error("验证邮件发送失败:", error)
-   emailSent = false
+    console.error("新需求通知邮件发送失败:", error)
   }
 
   return NextResponse.json(
-   { id: demand.id, status: "pending", emailSent },
+    { id: demand.id, status: "published", manageToken },
     { status: 201 },
   )
 }

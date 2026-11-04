@@ -6,10 +6,7 @@ import { verifyCaptcha } from "@/lib/captcha"
 import { checkSensitive } from "@/lib/sensitive-words"
 import { inquirySchema } from "@/lib/validations"
 import { sendEmail } from "@/lib/email/client"
-import {
-  inquiryNotificationHtml,
-  manualRelayHtml,
-} from "@/lib/email/templates"
+import { newInquiryNotifyHtml } from "@/lib/email/templates"
 import { siteConfig } from "@/lib/constants"
 
 /** 服务方对需求提交意向：校验 -> 验证码 -> 限流 -> 敏感词 -> 入库 -> 通知 */
@@ -39,6 +36,8 @@ export async function POST(
       id: true,
       title: true,
       status: true,
+      contactName: true,
+      contactPhone: true,
       contactEmail: true,
       allowDirectContact: true,
     },
@@ -65,33 +64,23 @@ export async function POST(
     },
   })
 
+  // 不向用户发邮件：平台管理员统一接收通知，审核后撮合双方对接
   try {
-    if (demand.allowDirectContact) {
-      await sendEmail({
-        to: demand.contactEmail,
-        subject: `【RemoteSense Hub】新服务方意向：${demand.title}`,
-        html: inquiryNotificationHtml({
-          demandTitle: demand.title,
-          name: parsed.data.name,
-          phone: parsed.data.phone,
-          email: parsed.data.email,
-          message: parsed.data.message,
-          demandUrl: `${process.env.NEXT_PUBLIC_SITE_URL || ""}/demands/${demand.id}`,
-        }),
-      })
-    } else {
-      await sendEmail({
-        to: siteConfig.cooperationEmail,
-        subject: `【需人工转达】${demand.title} 收到新合作意向`,
-        html: manualRelayHtml({
-          demandTitle: demand.title,
-          name: parsed.data.name,
-          phone: parsed.data.phone,
-          email: parsed.data.email,
-          message: parsed.data.message,
-        }),
-      })
-    }
+    await sendEmail({
+      to: siteConfig.cooperationEmail,
+      subject: `【新服务方意向】${demand.title}`,
+      html: newInquiryNotifyHtml({
+        demandTitle: demand.title,
+        name: parsed.data.name,
+        phone: parsed.data.phone,
+        email: parsed.data.email,
+        message: parsed.data.message,
+        demandOwnerName: demand.contactName,
+        demandOwnerPhone: demand.contactPhone,
+        demandOwnerEmail: demand.contactEmail,
+        demandUrl: `${process.env.NEXT_PUBLIC_SITE_URL || ""}/demands/${demand.id}`,
+      }),
+    })
   } catch (error) {
     console.error("咨询通知邮件发送失败:", error)
   }

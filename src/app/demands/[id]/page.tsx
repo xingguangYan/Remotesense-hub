@@ -166,13 +166,13 @@ const specs: { label: string; value: string | null; icon: typeof MapPin; tone: s
             <div>
               <p className="text-xs text-muted-foreground">{t.detail.phone}</p>
               <p className="mt-1 text-sm font-medium text-foreground">
-                {maskPhone(demand.contactPhone)}
+                {demand.contactPhone ? maskPhone(demand.contactPhone) : t.common.notFilled}
               </p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">{t.detail.email}</p>
               <p className="mt-1 text-sm font-medium text-foreground">
-                {maskEmail(demand.contactEmail)}
+                {demand.contactEmail ? maskEmail(demand.contactEmail) : t.common.notFilled}
               </p>
             </div>
           </div>

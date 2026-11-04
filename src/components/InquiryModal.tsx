@@ -143,9 +143,7 @@ export function InquiryModal({
                   {fieldError(errors.name?.message)}
                 </div>
                 <div>
-                  <Label htmlFor="inquiry-phone">
-                    {f.phone} <span className="text-destructive">*</span>
-                  </Label>
+                  <Label htmlFor="inquiry-phone">{f.phone}</Label>
                   <Input
                     id="inquiry-phone"
                     type="tel"
@@ -159,9 +157,7 @@ export function InquiryModal({
                 </div>
               </div>
               <div>
-                <Label htmlFor="inquiry-email">
-                  {f.email} <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor="inquiry-email">{f.email}</Label>
                 <Input
                   id="inquiry-email"
                   type="email"
@@ -171,6 +167,10 @@ export function InquiryModal({
                 />
                 {fieldError(errors.email?.message)}
               </div>
+              <p className="-mt-1 flex items-start gap-1.5 text-xs text-amber-700">
+                <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                {t.common.contactAtLeastOne}
+              </p>
               <div>
                 <Label htmlFor="inquiry-message">
                   {f.message} <span className="text-destructive">*</span>

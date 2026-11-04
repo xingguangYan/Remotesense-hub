@@ -20,63 +20,71 @@ function button(url: string, text: string): string {
   return `<a href="${url}" style="display:inline-block;background-color:#0EA5E9;color:#ffffff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 24px;border-radius:6px;margin:8px 4px 8px 0;">${text}</a>`
 }
 
-export function verificationEmailHtml(params: {
+/** 新需求上线 → 通知平台管理员（接收方：COOPERATION_EMAIL） */
+export function newDemandNotifyHtml(params: {
   title: string
-  verifyUrl: string
-  manageUrl: string
+  category: string
+  region: string
+  budget: string | null
+  contactName: string
+  contactPhone: string
+  contactEmail: string
+  demandUrl: string
+  adminUrl: string
 }): string {
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding:4px 0;color:#64748B;width:96px;">${label}</td><td style="padding:4px 0;">${value || "未填写"}</td></tr>`
   return layout(
-    "验证您的需求发布",
-    `<p style="margin:0 0 12px;">您好，您在 RemoteSense Hub 发布了一条需求：</p>
+    "新需求已上线",
+    `<p style="margin:0 0 12px;">一条新需求已直接发布到需求大厅，请您及时审核：</p>
      <p style="margin:0 0 16px;font-size:16px;font-weight:600;">「${params.title}」</p>
-     <p style="margin:0 0 8px;">点击下方按钮确认发布，确认后需求将公开展示：</p>
-     ${button(params.verifyUrl, "确认发布")}
-     <p style="margin:16px 0 8px;">您还可以通过此链接随时管理（查看状态 / 编辑 / 关闭）该需求：</p>
-     ${button(params.manageUrl, "管理我的需求")}
-     <p style="margin:16px 0 0;color:#64748B;">验证链接 24 小时内有效，超时未验证的需求将被自动标记为失效。链接地址：<br>${params.verifyUrl}</p>`,
+     <table cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;margin-bottom:16px;">
+       ${row("需求类型", params.category)}
+       ${row("目标区域", params.region)}
+       ${row("预算区间", params.budget || "")}
+       ${row("联系人", params.contactName)}
+       ${row("手机号", params.contactPhone)}
+       ${row("邮箱", params.contactEmail)}
+     </table>
+     ${button(params.demandUrl, "查看需求")}
+     ${button(params.adminUrl, "前往管理后台")}
+     <p style="margin:16px 0 0;color:#64748B;">提醒：该需求已直接上线，如内容不合规请及时在管理后台下架。</p>`,
   )
 }
 
-export function inquiryNotificationHtml(params: {
+/** 新服务方意向 → 通知平台管理员，由平台撮合双方对接 */
+export function newInquiryNotifyHtml(params: {
   demandTitle: string
   name: string
   phone: string
   email: string
   message: string
+  demandOwnerName: string
+  demandOwnerPhone: string
+  demandOwnerEmail: string
   demandUrl: string
 }): string {
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding:4px 0;color:#64748B;width:96px;">${label}</td><td style="padding:4px 0;">${value || "未填写"}</td></tr>`
   return layout(
-    "收到一条服务方意向",
-    `<p style="margin:0 0 12px;">有服务方对您的需求表示感兴趣：</p>
-     <p style="margin:0 0 16px;font-size:16px;font-weight:600;">「${params.demandTitle}」</p>
+    "新服务方意向",
+    `<p style="margin:0 0 12px;">有服务方对需求提交了合作意向，请审核并撮合双方对接：</p>
+     <p style="margin:0 0 16px;font-size:16px;font-weight:600;">需求：${params.demandTitle}</p>
+     <p style="margin:0 0 12px;color:#64748B;font-weight:600;">服务方信息</p>
+     <table cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;margin-bottom:12px;">
+       ${row("联系人", params.name)}
+       ${row("手机号", params.phone)}
+       ${row("邮箱", params.email)}
+     </table>
+     <p style="margin:0 0 12px;color:#64748B;font-weight:600;">需求方信息</p>
      <table cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;margin-bottom:16px;">
-       <tr><td style="padding:4px 0;color:#64748B;width:72px;">联系人</td><td style="padding:4px 0;">${params.name}</td></tr>
-       <tr><td style="padding:4px 0;color:#64748B;">电话</td><td style="padding:4px 0;">${params.phone}</td></tr>
-       <tr><td style="padding:4px 0;color:#64748B;">邮箱</td><td style="padding:4px 0;">${params.email}</td></tr>
+       ${row("联系人", params.demandOwnerName)}
+       ${row("手机号", params.demandOwnerPhone)}
+       ${row("邮箱", params.demandOwnerEmail)}
      </table>
      <p style="margin:0 0 16px;color:#64748B;">服务方案：</p>
      <p style="margin:0 0 16px;background-color:#F1F5F9;padding:12px;border-radius:6px;">${params.message}</p>
-     <p style="margin:0;color:#64748B;">请直接通过以上联系方式与服务方对接。</p>`,
-  )
-}
-
-export function manualRelayHtml(params: {
-  demandTitle: string
-  name: string
-  phone: string
-  email: string
-  message: string
-}): string {
-  return layout(
-    "【需人工转达】新合作意向",
-    `<p style="margin:0 0 12px;">一条新合作意向已提交，但需求方未开启「允许直接联系」，需人工转达：</p>
-     <p style="margin:0 0 16px;font-size:16px;font-weight:600;">需求：${params.demandTitle}</p>
-     <table cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;">
-       <tr><td style="padding:4px 0;color:#64748B;width:72px;">联系人</td><td style="padding:4px 0;">${params.name}</td></tr>
-       <tr><td style="padding:4px 0;color:#64748B;">电话</td><td style="padding:4px 0;">${params.phone}</td></tr>
-       <tr><td style="padding:4px 0;color:#64748B;">邮箱</td><td style="padding:4px 0;">${params.email}</td></tr>
-     </table>
-     <p style="margin:12px 0 0;color:#64748B;">服务方案：${params.message}</p>`,
+     ${button(params.demandUrl, "查看需求详情")}`,
   )
 }
 

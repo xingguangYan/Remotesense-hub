@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
-import { AlertCircle, ArrowLeft, ArrowRight, Mail } from "lucide-react"
+import { AlertCircle, ArrowLeft, ArrowRight, Mail, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -107,8 +107,7 @@ export function PublishForm() {
         throw new Error(serverError(t, data))
       }
       toast.success(t.publish.toastSuccess)
-      const mailParam = data.emailSent === false ? "&mail=failed" : ""
-      router.push(`/publish/success?id=${data.id}${mailParam}`)
+      router.push(`/publish/success?manage=${data.manageToken}`)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t.errors.fallback)
       setCaptcha("")
@@ -319,9 +318,7 @@ export function PublishForm() {
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <Label htmlFor="contactPhone">
-                  {f.phone} <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor="contactPhone">{f.phone}</Label>
                 <Input
                   id="contactPhone"
                   type="tel"
@@ -334,9 +331,7 @@ export function PublishForm() {
                 {fieldErrorMessage(t, errors.contactPhone?.message)}
               </div>
               <div>
-                <Label htmlFor="contactEmail">
-                  {f.email} <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor="contactEmail">{f.email}</Label>
                 <Input
                   id="contactEmail"
                   type="email"
@@ -346,6 +341,16 @@ export function PublishForm() {
                 />
                 {fieldErrorMessage(t, errors.contactEmail?.message)}
               </div>
+            </div>
+            <p className="-mt-3 flex items-start gap-1.5 text-xs text-amber-700">
+              <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              {t.common.contactAtLeastOne}
+            </p>
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
+              <p className="flex items-start gap-2 text-xs leading-relaxed text-amber-800">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+                {t.common.securityNotice}
+              </p>
             </div>
             <div className="flex items-start gap-3 rounded-md border border-border bg-muted/40 p-4">
               <input

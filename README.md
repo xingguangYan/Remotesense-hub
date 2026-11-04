@@ -54,9 +54,12 @@ npm run seed
 
 ## 邮件配置
 
+平台不向用户发送任何邮件；所有通知（新需求上线、新服务方意向、商务合作咨询）统一发送到 `COOPERATION_EMAIL`（平台管理员邮箱），由管理员在后台 `/admin` 审核。
+
 1. 在 [Resend](https://resend.com) 注册并获取 API Key，填入 `RESEND_API_KEY`
-2. 在 Resend 后台验证发件域名，更新 `MAIL_FROM`
-3. 无 Key 时平台照常运行，验证 / 通知邮件改为控制台输出，验证链接需手动从日志复制
+2. 免费方案：Resend 免费版的测试发件人 `onboarding@resend.dev` 只能发给「注册 Resend 的账号邮箱」——只要该邮箱就是 `COOPERATION_EMAIL`，即可零成本发送全部通知，无需验证发件域名
+3. 如需自定义发件人，在 Resend 后台验证自有域名后更新 `MAIL_FROM`
+4. 无 API Key 时平台照常运行，通知邮件改为在服务端控制台输出
 
 ## 部署（Vercel + Neon）
 

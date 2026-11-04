@@ -313,13 +313,16 @@ export function AdminPanel({
                     <Input id="f-name" required minLength={2} maxLength={30} value={form.contactName} onChange={(e) => updateForm("contactName", e.target.value)} />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="f-phone">手机号（11 位）*</Label>
-                    <Input id="f-phone" required pattern="^1[3-9]\d{9}$" value={form.contactPhone} onChange={(e) => updateForm("contactPhone", e.target.value)} />
+                    <Label htmlFor="f-phone">手机号（11 位）</Label>
+                    <Input id="f-phone" pattern="^1[3-9]\d{9}$" value={form.contactPhone} onChange={(e) => updateForm("contactPhone", e.target.value)} />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="f-email">邮箱 *</Label>
-                    <Input id="f-email" type="email" required value={form.contactEmail} onChange={(e) => updateForm("contactEmail", e.target.value)} />
+                    <Label htmlFor="f-email">邮箱</Label>
+                    <Input id="f-email" type="email" value={form.contactEmail} onChange={(e) => updateForm("contactEmail", e.target.value)} />
                   </div>
+                  <p className="col-span-2 -mt-2 text-xs text-amber-700">
+                    手机号与邮箱至少填写一项
+                  </p>
                   <div className="flex items-center gap-2 sm:mt-6">
                     <input
                       id="f-direct"
