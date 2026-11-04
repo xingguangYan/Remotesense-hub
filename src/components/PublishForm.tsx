@@ -107,7 +107,8 @@ export function PublishForm() {
         throw new Error(serverError(t, data))
       }
       toast.success(t.publish.toastSuccess)
-      router.push("/publish/success")
+      const mailParam = data.emailSent === false ? "&mail=failed" : ""
+      router.push(`/publish/success?id=${data.id}${mailParam}`)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t.errors.fallback)
       setCaptcha("")

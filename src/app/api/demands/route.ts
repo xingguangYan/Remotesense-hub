@@ -109,6 +109,7 @@ export async function POST(req: Request) {
   })
 
   // 邮件发送失败不阻断发布（dev 模式下仅打印日志）
+ let emailSent = true
   try {
     await sendEmail({
       to: parsed.data.contactEmail,
@@ -121,10 +122,11 @@ export async function POST(req: Request) {
     })
   } catch (error) {
     console.error("验证邮件发送失败:", error)
+   emailSent = false
   }
 
   return NextResponse.json(
-    { id: demand.id, status: "pending" },
+   { id: demand.id, status: "pending", emailSent },
     { status: 201 },
   )
 }

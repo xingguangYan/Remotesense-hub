@@ -9,6 +9,7 @@ export type ApiErrorCode =
   | "INVALID_TOKEN"
   | "EXPIRED_TOKEN"
   | "ALREADY_VERIFIED"
+ | "UNAUTHORIZED"
   | "INTERNAL_ERROR"
 
 export interface ApiErrorBody {

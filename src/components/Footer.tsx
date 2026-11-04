@@ -38,6 +38,9 @@ export function Footer() {
             <Link href="/about" className="hover:text-primary">
               {t.footer.disclaimer}
             </Link>
+           <Link href="/admin" className="hover:text-primary">
+             管理登录
+           </Link>
           </div>
         </div>
       </div>
