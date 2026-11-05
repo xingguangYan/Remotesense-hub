@@ -204,6 +204,8 @@ const specs: { label: string; value: string | null; icon: typeof MapPin; tone: s
               <InquiryModal
                 demandId={demand.id}
                 allowDirectContact={demand.allowDirectContact}
+              ownerPhone={demand.contactPhone}
+              ownerEmail={demand.contactEmail}
               />
             )}
             <p className="mt-3 max-w-md text-xs text-muted-foreground">

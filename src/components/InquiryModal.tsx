@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { AlertCircle, CheckCircle2, Handshake } from "lucide-react"
+import { Check, Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -35,9 +36,13 @@ function fieldError(message?: string) {
 export function InquiryModal({
   demandId,
   allowDirectContact,
+  ownerPhone,
+  ownerEmail,
 }: {
   demandId: string
   allowDirectContact: boolean
+  ownerPhone?: string
+  ownerEmail?: string
 }) {
   const { t } = useTranslations()
   const [open, setOpen] = useState(false)
@@ -45,6 +50,22 @@ export function InquiryModal({
   const [captcha, setCaptcha] = useState("")
   const [captchaKey, setCaptchaKey] = useState(0)
   const [submitting, setSubmitting] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  async function copyContact() {
+    const lines = [
+      ownerPhone ? `${t.inquiry.ownerPhone}：${ownerPhone}` : null,
+      ownerEmail ? `${t.inquiry.ownerEmail}：${ownerEmail}` : null,
+    ].filter(Boolean) as string[]
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"))
+      setCopied(true)
+      toast.success(t.common.copied)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      window.prompt(t.publish.manageCopyFallback, lines.join("\n"))
+    }
+  }
 
   const {
     register,
@@ -112,6 +133,43 @@ export function InquiryModal({
             <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
               {allowDirectContact ? t.inquiry.successDirect : t.inquiry.successRelay}
             </p>
+            {ownerPhone || ownerEmail ? (
+              <div className="mx-auto mt-5 max-w-sm rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-left">
+                <p className="text-sm font-semibold text-emerald-800">
+                  {t.inquiry.ownerContactTitle}
+                </p>
+                <dl className="mt-2 space-y-1.5">
+                  {ownerPhone && (
+                    <div className="flex items-center gap-2 text-sm text-emerald-900">
+                      <dt className="w-10 shrink-0 text-xs text-emerald-700">{t.inquiry.ownerPhone}</dt>
+                      <dd className="font-medium">{ownerPhone}</dd>
+                    </div>
+                  )}
+                  {ownerEmail && (
+                    <div className="flex items-center gap-2 text-sm text-emerald-900">
+                      <dt className="w-10 shrink-0 text-xs text-emerald-700">{t.inquiry.ownerEmail}</dt>
+                      <dd className="break-all font-medium">{ownerEmail}</dd>
+                    </div>
+                  )}
+                </dl>
+                <p className="mt-3 text-xs leading-relaxed text-emerald-700/90">
+                  {t.inquiry.ownerContactHint}
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 w-full border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                  onClick={copyContact}
+                >
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? t.common.copied : t.inquiry.copyContact}
+                </Button>
+              </div>
+            ) : (
+              <p className="mx-auto mt-4 max-w-sm text-sm text-amber-700">
+                {t.inquiry.ownerContactNone}
+              </p>
+            )}
             <Button className="mt-6" onClick={() => handleOpenChange(false)}>
               {t.common.confirm}
             </Button>
