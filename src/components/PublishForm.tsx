@@ -30,7 +30,7 @@ import {
 import { demandSchema, type DemandInput } from "@/lib/validations"
 
 const STEP_FIELDS: (keyof DemandInput)[][] = [
-  ["title", "category", "region", "area", "resolution", "timeRange", "budget"],
+  ["title", "category", "region", "area", "resolution", "timeRange", "budget", "startAt", "deadlineAt"],
   ["description"],
   ["contactName", "contactPhone", "contactEmail", "company"],
 ]
@@ -81,6 +81,8 @@ export function PublishForm() {
       area: "",
       resolution: "",
       company: "",
+     startAt: "",
+     deadlineAt: "",
     } as DemandInput,
   })
 
@@ -107,7 +109,7 @@ export function PublishForm() {
         throw new Error(serverError(t, data))
       }
       toast.success(t.publish.toastSuccess)
-      router.push(`/publish/success?manage=${data.manageToken}`)
+      router.push(`/publish/success?manage=${data.manageToken}&id=${data.id}`)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t.errors.fallback)
       setCaptcha("")
@@ -261,6 +263,38 @@ export function PublishForm() {
                 />
                 {fieldErrorMessage(t, errors.timeRange?.message)}
               </div>
+            </div>
+          </div>
+        )}
+        {step === 0 && (
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="startAt">{f.startAt}</Label>
+              <Input
+                id="startAt"
+                type="date"
+                aria-describedby="startAt-hint"
+                className="mt-1.5"
+                {...register("startAt")}
+              />
+              <p id="startAt-hint" className="mt-1 text-xs text-muted-foreground">
+                {f.startAtHint}
+              </p>
+              {fieldErrorMessage(t, errors.startAt?.message)}
+            </div>
+            <div>
+              <Label htmlFor="deadlineAt">{f.deadlineAt}</Label>
+              <Input
+                id="deadlineAt"
+                type="date"
+                aria-describedby="deadlineAt-hint"
+                className="mt-1.5"
+                {...register("deadlineAt")}
+              />
+              <p id="deadlineAt-hint" className="mt-1 text-xs text-muted-foreground">
+                {f.deadlineAtHint}
+              </p>
+              {fieldErrorMessage(t, errors.deadlineAt?.message)}
             </div>
           </div>
         )}

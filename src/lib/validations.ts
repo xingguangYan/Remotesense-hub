@@ -31,6 +31,18 @@ const optionalEmail = z
   .transform((v) => (v ?? "").trim())
   .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "请输入有效的邮箱地址")
 
+/** 日期：选填，YYYY-MM-DD */
+const optionalDate = z
+  .string()
+  .trim()
+  .max(10)
+  .optional()
+  .transform((v) => (v ?? "").trim())
+  .refine(
+    (v) => v === "" || /^\d{4}-\d{2}-\d{2}$/.test(v),
+    "日期格式无效，应为 YYYY-MM-DD",
+  )
+
 /** 至少一项联系方式（发布 / 咨询 / 合作通用） */
 function requireOneContact<T extends Record<string, unknown>>(
   phoneKey: keyof T,
@@ -67,6 +79,8 @@ export const demandSchema = z.object({
     .trim()
     .min(2, "请填写时间要求")
     .max(100, "时间要求过长"),
+  startAt: optionalDate,
+  deadlineAt: optionalDate,
   budget: budgetField,
   description: z
     .string()
@@ -84,6 +98,15 @@ export const demandSchema = z.object({
   allowDirectContact: z.boolean().default(true),
   captchaAnswer: z.string().min(1, "请输入验证码"),
 }).superRefine(requireOneContact<DemandInputShape>("contactPhone", "contactEmail"))
+  .superRefine((val, ctx) => {
+    if (val.startAt && val.deadlineAt && val.deadlineAt < val.startAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["deadlineAt"],
+        message: "截止时间不能早于开始时间",
+      })
+    }
+  })
 export type DemandInput = z.infer<typeof demandSchema>
 type DemandInputShape = {
   contactPhone: string

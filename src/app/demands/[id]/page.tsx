@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarRange, Layers, MapPin, Ruler, Wallet } from "lucide-react"
+import { ArrowLeft, CalendarClock, CalendarRange, Layers, MapPin, Ruler, Wallet } from "lucide-react"
 import type { Metadata } from "next"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,7 +16,7 @@ import {
 } from "@/lib/constants"
 import { prisma } from "@/lib/prisma"
 import { maskEmail, maskPhone } from "@/lib/mask"
-import { timeAgo } from "@/lib/utils"
+import { fmtDateOnly, isExpired, timeAgo } from "@/lib/utils"
 
 type Params = { id: string }
 
@@ -68,6 +68,7 @@ export default async function DemandDetailPage({ params }: { params: Params }) {
   const budgetLabel = demand.budget
     ? BUDGET_LABELS[locale][demand.budget as BudgetRange] || demand.budget
     : t.common.budgetNegotiable
+  const expired = isExpired(demand.deadlineAt)
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -84,6 +85,8 @@ const specs: { label: string; value: string | null; icon: typeof MapPin; tone: s
     { label: t.detail.specs.category, value: categoryLabel, icon: Layers, tone: "text-primary" },
     { label: t.detail.specs.budget, value: budgetLabel, icon: Wallet, tone: "text-emerald-600" },
     { label: t.detail.specs.time, value: demand.timeRange, icon: CalendarRange, tone: "text-amber-600" },
+    { label: t.detail.specs.startAt, value: demand.startAt ? fmtDateOnly(demand.startAt) : null, icon: CalendarRange, tone: "text-sky-600" },
+    { label: t.detail.specs.deadlineAt, value: demand.deadlineAt ? fmtDateOnly(demand.deadlineAt) : null, icon: CalendarClock, tone: "text-rose-600" },
     { label: t.detail.specs.resolution, value: demand.resolution, icon: Ruler, tone: "text-violet-600" },
     { label: t.detail.specs.area, value: demand.area, icon: Ruler, tone: "text-rose-600" },
   ]
@@ -106,6 +109,11 @@ const specs: { label: string; value: string | null; icon: typeof MapPin; tone: s
         <div className="border-b border-border p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="accent">{categoryLabel}</Badge>
+            {expired && (
+              <span className="inline-flex rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-700">
+                {t.common.expiredLabel}
+              </span>
+            )}
             <span className="text-xs text-muted-foreground">
               {timeAgo(demand.createdAt)}
               {t.common.postedAgo} · {demand.viewCount} {t.common.viewsUnit} ·{" "}
@@ -183,10 +191,21 @@ const specs: { label: string; value: string | null; icon: typeof MapPin; tone: s
 
         <div className="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
           <div>
-            <InquiryModal
-              demandId={demand.id}
-              allowDirectContact={demand.allowDirectContact}
-            />
+            {expired ? (
+              <div className="rounded-md border border-rose-200 bg-rose-50 p-4">
+                <p className="text-sm font-semibold text-rose-700">
+                  {t.detail.expiredTitle}
+                </p>
+                <p className="mt-1 text-xs text-rose-700/90">
+                  {t.detail.expiredDesc}
+                </p>
+              </div>
+            ) : (
+              <InquiryModal
+                demandId={demand.id}
+                allowDirectContact={demand.allowDirectContact}
+              />
+            )}
             <p className="mt-3 max-w-md text-xs text-muted-foreground">
               {demand.allowDirectContact
                 ? t.detail.inquiryNoteDirect

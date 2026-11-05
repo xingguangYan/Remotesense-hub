@@ -11,6 +11,7 @@ import {
 import { sendEmail } from "@/lib/email/client"
 import { newDemandNotifyHtml } from "@/lib/email/templates"
 import { BUDGETS, CATEGORY_LABELS, DEMAND_CATEGORIES, siteConfig } from "@/lib/constants"
+import { parseOptionalDate, startOfTodayUtc } from "@/lib/utils"
 
 /** 已发布需求列表（支持筛选，供客户端分页/筛选调用） */
 export async function GET(req: Request) {
@@ -26,6 +27,10 @@ export async function GET(req: Request) {
 
   const where = {
     status: "published" as const,
+    OR: [
+      { deadlineAt: null },
+      { deadlineAt: { gte: startOfTodayUtc() } },
+    ],
     ...(category &&
       DEMAND_CATEGORIES.includes(category as never) && { category }),
     ...(budget && BUDGETS.includes(budget as never) && { budget }),
@@ -46,6 +51,8 @@ export async function GET(req: Request) {
         region: true,
         budget: true,
         createdAt: true,
+       startAt: true,
+       deadlineAt: true,
       },
     }),
   ])
@@ -99,6 +106,8 @@ export async function POST(req: Request) {
       company: parsed.data.company || null,
       allowDirectContact: parsed.data.allowDirectContact,
       status: "published",
+      startAt: parseOptionalDate(parsed.data.startAt),
+      deadlineAt: parseOptionalDate(parsed.data.deadlineAt),
       manageTokenHash: hashToken(manageToken),
     },
   })

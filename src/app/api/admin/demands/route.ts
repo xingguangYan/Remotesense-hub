@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { apiError } from "@/lib/api"
 import { isAdmin } from "@/lib/admin"
 import { demandSchema } from "@/lib/validations"
+import { parseOptionalDate } from "@/lib/utils"
 
 export const runtime = "nodejs"
 
@@ -36,6 +37,8 @@ export async function POST(req: Request) {
       company: d.company || null,
       allowDirectContact: d.allowDirectContact,
       status: "published",
+      startAt: parseOptionalDate(d.startAt),
+      deadlineAt: parseOptionalDate(d.deadlineAt),
     },
   })
 

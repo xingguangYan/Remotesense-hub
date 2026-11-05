@@ -8,6 +8,7 @@ import { inquirySchema } from "@/lib/validations"
 import { sendEmail } from "@/lib/email/client"
 import { newInquiryNotifyHtml } from "@/lib/email/templates"
 import { siteConfig } from "@/lib/constants"
+import { isExpired } from "@/lib/utils"
 
 /** 服务方对需求提交意向：校验 -> 验证码 -> 限流 -> 敏感词 -> 入库 -> 通知 */
 export async function POST(
@@ -40,11 +41,16 @@ export async function POST(
       contactPhone: true,
       contactEmail: true,
       allowDirectContact: true,
+      deadlineAt: true,
     },
   })
 
   if (!demand || demand.status !== "published") {
     return apiError(404, "NOT_FOUND", "需求不存在或未通过验证，无法提交意向")
+  }
+
+  if (isExpired(demand.deadlineAt)) {
+    return apiError(410, "DEMAND_EXPIRED", "该需求已过报名截止时间，无法提交意向")
   }
 
   const { passed, hits } = checkSensitive(

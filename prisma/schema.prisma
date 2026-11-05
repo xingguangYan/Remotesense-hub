@@ -25,6 +25,8 @@ model Demand {
   resolution String? // 分辨率要求
   timeRange String   // 时间要求
   budget    String?  // 预算区间枚举
+  startAt    DateTime? // 需求开始时间（选填）
+  deadlineAt DateTime? // 报名截止时间（选填）：过期后自动标记已截止，不再接受服务方联系
   description String // 50-2000 字（Zod 强制）
 
   contactName  String

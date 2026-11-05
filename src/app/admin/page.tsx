@@ -28,6 +28,8 @@ export default async function AdminPage() {
     createdAt: d.createdAt.toISOString(),
     updatedAt: d.updatedAt.toISOString(),
     verifyExpiresAt: d.verifyExpiresAt?.toISOString() ?? null,
+    startAt: d.startAt?.toISOString() ?? null,
+    deadlineAt: d.deadlineAt?.toISOString() ?? null,
   }))
   const inquiriesSer = inquiries.map((i) => ({
     ...i,

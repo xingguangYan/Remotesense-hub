@@ -22,6 +22,7 @@ import {
   CATEGORY_LABELS,
   DEMAND_CATEGORIES,
 } from "@/lib/constants"
+import { fmtDateOnly, isExpired } from "@/lib/utils"
 
 type DemandRow = {
   id: string
@@ -34,6 +35,8 @@ type DemandRow = {
   contactPhone: string
   contactEmail: string
   createdAt: string
+  startAt: string | null
+  deadlineAt: string | null
   _count: { inquiries: number }
 }
 
@@ -93,6 +96,8 @@ const emptyForm = {
   contactPhone: "",
   contactEmail: "",
   allowDirectContact: true,
+  startAt: "",
+  deadlineAt: "",
 }
 
 export function AdminPanel({
@@ -304,6 +309,14 @@ export function AdminPanel({
                       ))}
                     </Select>
                   </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="f-start">开始时间（选填）</Label>
+                    <Input id="f-start" type="date" value={form.startAt} onChange={(e) => updateForm("startAt", e.target.value)} />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="f-deadline">报名截止时间（选填）</Label>
+                    <Input id="f-deadline" type="date" value={form.deadlineAt} onChange={(e) => updateForm("deadlineAt", e.target.value)} />
+                  </div>
                   <div className="col-span-2 flex flex-col gap-2">
                     <Label htmlFor="f-desc">需求详细描述（50–2000 字）*</Label>
                     <Textarea id="f-desc" required minLength={50} maxLength={2000} rows={5} value={form.description} onChange={(e) => updateForm("description", e.target.value)} />
@@ -379,6 +392,15 @@ export function AdminPanel({
                             {d.region}
                             {d._count.inquiries > 0 && ` · ${d._count.inquiries} 条意向`}
                           </div>
+                          {d.deadlineAt && (
+                            <div
+                              className={`mt-0.5 text-xs ${
+                                isExpired(d.deadlineAt) ? "text-rose-600" : "text-amber-600"
+                              }`}
+                            >
+                              {isExpired(d.deadlineAt) ? "已截止" : "报名截止"} {fmtDateOnly(d.deadlineAt)}
+                            </div>
+                          )}
                         </td>
                         <td className="whitespace-nowrap py-3 pr-3 text-muted-foreground">
                           {zh[d.category as keyof typeof zh] || d.category}

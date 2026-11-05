@@ -22,6 +22,7 @@ import {
   type DemandCategory,
 } from "@/lib/constants"
 import { prisma } from "@/lib/prisma"
+import { startOfTodayUtc } from "@/lib/utils"
 
 const CATEGORY_ICONS: Record<DemandCategory, typeof FileText> = {
   IMAGE_ACQUISITION: MapIcon,
@@ -37,14 +38,22 @@ export default async function HomePage() {
   const t = getMessages(locale)
 
   const latestDemands = await prisma.demand.findMany({
-    where: { status: "published" },
+    where: {
+      status: "published",
+      OR: [{ deadlineAt: null }, { deadlineAt: { gte: startOfTodayUtc() } }],
+    },
     orderBy: { createdAt: "desc" },
     take: 6,
     include: { _count: { select: { inquiries: true } } },
   })
 
   const [publishedCount, inquiryCount] = await Promise.all([
-    prisma.demand.count({ where: { status: "published" } }),
+    prisma.demand.count({
+      where: {
+        status: "published",
+        OR: [{ deadlineAt: null }, { deadlineAt: { gte: startOfTodayUtc() } }],
+      },
+    }),
     prisma.inquiry.count(),
   ])
   const stats = [

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { MapPin, Wallet } from "lucide-react"
+import { CalendarClock, MapPin, Wallet } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { type Locale, type Messages } from "@/i18n/messages"
 import {
@@ -8,7 +8,7 @@ import {
   type BudgetRange,
   type DemandCategory,
 } from "@/lib/constants"
-import { timeAgo } from "@/lib/utils"
+import { cn, fmtDateOnly, isExpired, timeAgo } from "@/lib/utils"
 
 export type DemandCardData = {
   id: string
@@ -17,6 +17,9 @@ export type DemandCardData = {
   region: string
   budget: string | null
   createdAt: Date
+  startAt?: Date | string | null
+  deadlineAt?: Date | string | null
+  isNew?: boolean
   _count?: { inquiries: number }
 }
 
@@ -29,6 +32,7 @@ export function DemandCard({
   t: Messages
   locale: Locale
 }) {
+  const expired = isExpired(demand.deadlineAt)
   const categoryLabel =
     CATEGORY_LABELS[locale][demand.category as DemandCategory] || demand.category
   const budgetLabel = demand.budget
@@ -38,7 +42,10 @@ export function DemandCard({
   return (
     <Link
       href={`/demands/${demand.id}`}
-      className="group block rounded-lg border border-border bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className={cn(
+        "group block rounded-lg border bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        demand.isNew ? "border-emerald-400 ring-2 ring-emerald-300/60" : "border-border",
+      )}
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className="line-clamp-2 text-base font-semibold text-foreground group-hover:text-primary">
@@ -66,6 +73,16 @@ export function DemandCard({
         <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
           {t.common.receivedPrefix} {demand._count.inquiries} {t.common.inquiriesUnit}
         </p>
+      )}
+      {demand.deadlineAt && (
+        <span
+          className={`ml-1 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+            expired ? "bg-rose-50 text-rose-600" : "bg-amber-50 text-amber-700"
+          }`}
+        >
+          <CalendarClock className="h-3 w-3" />
+          {expired ? t.common.expiredLabel : t.common.deadlineLabel} · {fmtDateOnly(demand.deadlineAt)}
+        </span>
       )}
     </Link>
   )

@@ -9,6 +9,7 @@ export type ApiErrorCode =
   | "INVALID_TOKEN"
   | "EXPIRED_TOKEN"
   | "ALREADY_VERIFIED"
+  | "DEMAND_EXPIRED"
  | "UNAUTHORIZED"
   | "INTERNAL_ERROR"
 

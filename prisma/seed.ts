@@ -18,6 +18,7 @@ async function main() {
 
   const now = Date.now()
 const daysAgo = (d: number) => new Date(now - d * 86_400_000)
+const daysAhead = (d: number) => new Date(now + d * 86_400_000)
 
   const demands = [
     {
@@ -28,6 +29,8 @@ const daysAgo = (d: number) => new Date(now - d * 86_400_000)
       area: "约 12 万平方公里",
       resolution: "10m",
       timeRange: "2026 年 4 月–9 月生育期",
+      startAt: daysAhead(3),
+      deadlineAt: daysAhead(75),
       budget: "BETWEEN_50K_200K",
       description:
         "为省级农业统计提供水稻种植面积本底数据，需要覆盖长江中下游稻主产区的多期卫星影像，完成水稻种植范围提取、面积统与专题图制作。成果包括矢量边界、分类栅格、面积统计表和 A0 专题图。要求在 2026 年 9 月底前交付，中间需配合一次到两次数据质量评审。",
@@ -49,6 +52,7 @@ const daysAgo = (d: number) => new Date(now - d * 86_400_000)
       area: "约 8600 平方公里",
       resolution: "0.5m",
       timeRange: "2026 年内完成拍摄与交付",
+      deadlineAt: daysAhead(120),
       budget: "OVER_200K",
       description:
         "需要获取该市全域 0.5 米分辨率彩色正射影像（DOM），含航空或卫星拍摄、空三加密、DEM 编辑、正射纠正与镶嵌裁切，成果按 1:2000 图幅分幅交付，元数据齐全。供应商需具备测绘航空摄影资质，能提供项目案例，签订保密协议。",
@@ -69,6 +73,7 @@ const daysAgo = (d: number) => new Date(now - d * 86_400_000)
       area: "主城区约 1200 平方公里",
       resolution: "优于 2m",
       timeRange: "2026 年 Q1–Q2",
+      deadlineAt: daysAhead(45),
       budget: "BETWEEN_10K_50K",
       description:
         "已有历年高分影像与标注样本，需要合作方完成变化检测模型的训练与调优，支持双期影像输入、输出变化矢量与置信度图。验收以测试集 F1 不低于 0.85 为标准，需交付模型文件、训练代码与推理服务接口文档，支持本地化部署。",

@@ -9,7 +9,7 @@ import { getMessages } from "@/i18n/messages"
 import { getLocale } from "@/i18n/server"
 import { BUDGETS, DEMAND_CATEGORIES } from "@/lib/constants"
 import { prisma } from "@/lib/prisma"
-import { cn } from "@/lib/utils"
+import { cn, isExpired, startOfTodayUtc } from "@/lib/utils"
 
 const PAGE_SIZE = 12
 
@@ -18,6 +18,7 @@ type SearchParams = {
   region?: string
   budget?: string
   page?: string
+  new?: string
 }
 
 export default async function DemandsPage({
@@ -31,6 +32,10 @@ export default async function DemandsPage({
 
   const where = {
     status: "published" as const,
+    OR: [
+      { deadlineAt: null },
+      { deadlineAt: { gte: startOfTodayUtc() } },
+    ],
     ...(searchParams.category &&
       DEMAND_CATEGORIES.includes(searchParams.category as never) && {
         category: searchParams.category,
@@ -59,6 +64,16 @@ export default async function DemandsPage({
   const hasFilters = Boolean(
     searchParams.category || searchParams.region || searchParams.budget,
   )
+  const newDemand = searchParams.new
+    ? demands.find((d) => d.id === searchParams.new)
+    : undefined
+  const banner = newDemand
+    ? {
+        title: t.demands.newBannerTitle,
+        desc: t.demands.newBannerDesc.replace("{title}", newDemand.title),
+        href: `/demands/${newDemand.id}`,
+      }
+    : null
 
   function pageHref(target: number) {
     const params = new URLSearchParams()
@@ -88,6 +103,18 @@ export default async function DemandsPage({
         </Suspense>
       </div>
 
+      {banner && (
+        <div className="mt-4 flex flex-col gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-emerald-700">{banner.title}</p>
+            <p className="mt-0.5 text-xs text-emerald-700/90">{banner.desc}</p>
+          </div>
+          <Button asChild size="sm" className="shrink-0">
+            <Link href={banner.href}>{t.demands.newBannerAction}</Link>
+          </Button>
+        </div>
+      )}
+
       <div className="mt-6">
         {demands.length === 0 ? (
           <EmptyState
@@ -111,7 +138,12 @@ export default async function DemandsPage({
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {demands.map((demand) => (
-              <DemandCard key={demand.id} demand={demand} t={t} locale={locale} />
+              <DemandCard
+                key={demand.id}
+                demand={{ ...demand, isNew: demand.id === searchParams.new }}
+                t={t}
+                locale={locale}
+              />
             ))}
           </div>
         )}
