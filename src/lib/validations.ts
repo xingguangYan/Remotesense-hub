@@ -59,8 +59,8 @@ function requireOneContact<T extends Record<string, unknown>>(
   }
 }
 
-/** 发布需求：三步表单汇总 */
-export const demandSchema = z.object({
+/** 发布需求：字段定义（客户端表单与 API 共用同一套 refine 规则） */
+const demandShape = {
   title: z
     .string()
     .trim()
@@ -96,17 +96,29 @@ export const demandSchema = z.object({
   contactEmail: optionalEmail,
   company: optionalText(100),
   allowDirectContact: z.boolean().default(true),
-  captchaAnswer: z.string().min(1, "请输入验证码"),
-}).superRefine(requireOneContact<DemandInputShape>("contactPhone", "contactEmail"))
-  .superRefine((val, ctx) => {
-    if (val.startAt && val.deadlineAt && val.deadlineAt < val.startAt) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["deadlineAt"],
-        message: "截止时间不能早于开始时间",
-      })
-    }
-  })
+}
+
+const refineDemand = <T extends z.ZodRawShape>(schema: z.ZodObject<T>) =>
+  schema
+    .superRefine(requireOneContact<Record<string, unknown>>("contactPhone", "contactEmail"))
+    .superRefine((val: { startAt?: string; deadlineAt?: string }, ctx) => {
+      if (val.startAt && val.deadlineAt && val.deadlineAt < val.startAt) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["deadlineAt"],
+          message: "截止时间不能早于开始时间",
+        })
+      }
+    })
+
+/** 客户端三步表单（不含人机验证码，验证码由后端单独校验） */
+export const demandFormSchema = refineDemand(z.object(demandShape))
+
+/** API 层：表单 + 人机验证码 */
+export const demandSchema = refineDemand(
+  z.object({ ...demandShape, captchaAnswer: z.string().min(1, "请输入验证码") }),
+)
+export type DemandFormInput = z.infer<typeof demandFormSchema>
 export type DemandInput = z.infer<typeof demandSchema>
 type DemandInputShape = {
   contactPhone: string
@@ -130,8 +142,8 @@ export const manageEditSchema = z.object({
 })
 export type ManageEditInput = z.infer<typeof manageEditSchema>
 
-/** 服务方咨询 */
-export const inquirySchema = z.object({
+/** 服务方咨询：字段定义 */
+const inquiryShape = {
   name: z.string().trim().min(2, "请填写您的称呼").max(30, "称呼过长"),
   phone: optionalPhone,
   email: optionalEmail,
@@ -140,16 +152,27 @@ export const inquirySchema = z.object({
     .trim()
     .min(10, "请简单介绍您的服务方案（10–500 字）")
     .max(500, "服务方案说明过长（500 字以内）"),
-  captchaAnswer: z.string().min(1, "请输入验证码"),
-}).superRefine(requireOneContact<InquiryInputShape>("phone", "email"))
+}
+
+const refineInquiry = <T extends z.ZodRawShape>(schema: z.ZodObject<T>) =>
+  schema.superRefine(requireOneContact<Record<string, unknown>>("phone", "email"))
+
+/** 客户端表单（不含人机验证码） */
+export const inquiryFormSchema = refineInquiry(z.object(inquiryShape))
+
+/** API 层：表单 + 人机验证码 */
+export const inquirySchema = refineInquiry(
+  z.object({ ...inquiryShape, captchaAnswer: z.string().min(1, "请输入验证码") }),
+)
+export type InquiryFormInput = z.infer<typeof inquiryFormSchema>
 export type InquiryInput = z.infer<typeof inquirySchema>
 type InquiryInputShape = {
   phone: string
   email: string
 }
 
-/** 商务合作咨询 */
-export const cooperationSchema = z.object({
+/** 商务合作咨询：字段定义 */
+const cooperationShape = {
   name: z.string().trim().min(2, "请填写您的姓名").max(30, "姓名过长"),
   company: optionalText(100),
   phone: optionalPhone,
@@ -159,8 +182,19 @@ export const cooperationSchema = z.object({
     .trim()
     .min(10, "请描述您的合作意向（10–1000 字）")
     .max(1000, "合作意向描述过长（1000 字以内）"),
-  captchaAnswer: z.string().min(1, "请输入验证码"),
-}).superRefine(requireOneContact<CooperationInputShape>("phone", "email"))
+}
+
+const refineCooperation = <T extends z.ZodRawShape>(schema: z.ZodObject<T>) =>
+  schema.superRefine(requireOneContact<Record<string, unknown>>("phone", "email"))
+
+/** 客户端表单（不含人机验证码） */
+export const cooperationFormSchema = refineCooperation(z.object(cooperationShape))
+
+/** API 层：表单 + 人机验证码 */
+export const cooperationSchema = refineCooperation(
+  z.object({ ...cooperationShape, captchaAnswer: z.string().min(1, "请输入验证码") }),
+)
+export type CooperationFormInput = z.infer<typeof cooperationFormSchema>
 export type CooperationInput = z.infer<typeof cooperationSchema>
 type CooperationInputShape = {
   phone: string

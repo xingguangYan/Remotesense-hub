@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog"
 import { Captcha } from "@/components/Captcha"
 import { useTranslations } from "@/i18n/LocaleProvider"
-import { inquirySchema, type InquiryInput } from "@/lib/validations"
+import { inquiryFormSchema, type InquiryFormInput } from "@/lib/validations"
 
 function fieldError(message?: string) {
   if (!message) return null
@@ -51,12 +51,12 @@ export function InquiryModal({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<InquiryInput>({
-    resolver: zodResolver(inquirySchema),
+  } = useForm<InquiryFormInput>({
+    resolver: zodResolver(inquiryFormSchema),
     defaultValues: { message: "" },
   })
 
-  async function onValid(values: InquiryInput) {
+  async function onValid(values: InquiryFormInput) {
     setSubmitting(true)
     try {
       const res = await fetch(`/api/demands/${demandId}/inquiries`, {

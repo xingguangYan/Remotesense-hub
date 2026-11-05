@@ -9,7 +9,8 @@ import { getMessages } from "@/i18n/messages"
 import { getLocale } from "@/i18n/server"
 import { BUDGETS, DEMAND_CATEGORIES } from "@/lib/constants"
 import { prisma } from "@/lib/prisma"
-import { cn, isExpired, startOfTodayUtc } from "@/lib/utils"
+import { cn, startOfTodayUtc } from "@/lib/utils"
+import { ManageLinkBox } from "@/app/publish/success/ManageLinkBox"
 
 const PAGE_SIZE = 12
 
@@ -19,6 +20,7 @@ type SearchParams = {
   budget?: string
   page?: string
   new?: string
+  manage?: string
 }
 
 export default async function DemandsPage({
@@ -67,6 +69,7 @@ export default async function DemandsPage({
   const newDemand = searchParams.new
     ? demands.find((d) => d.id === searchParams.new)
     : undefined
+  const manageHref = searchParams.manage ? `/manage/${searchParams.manage}` : null
   const banner = newDemand
     ? {
         title: t.demands.newBannerTitle,
@@ -114,6 +117,8 @@ export default async function DemandsPage({
           </Button>
         </div>
       )}
+
+      {manageHref && <ManageLinkBox href={manageHref} />}
 
       <div className="mt-6">
         {demands.length === 0 ? (

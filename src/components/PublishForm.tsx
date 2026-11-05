@@ -27,9 +27,9 @@ import {
   CATEGORY_LABELS,
   DEMAND_CATEGORIES,
 } from "@/lib/constants"
-import { demandSchema, type DemandInput } from "@/lib/validations"
+import { demandFormSchema, type DemandFormInput } from "@/lib/validations"
 
-const STEP_FIELDS: (keyof DemandInput)[][] = [
+const STEP_FIELDS: (keyof DemandFormInput)[][] = [
   ["title", "category", "region", "area", "resolution", "timeRange", "budget", "startAt", "deadlineAt"],
   ["description"],
   ["contactName", "contactPhone", "contactEmail", "company"],
@@ -73,8 +73,8 @@ export function PublishForm() {
     handleSubmit,
     trigger,
     formState: { errors },
-  } = useForm<DemandInput>({
-    resolver: zodResolver(demandSchema),
+  } = useForm<DemandFormInput>({
+    resolver: zodResolver(demandFormSchema),
     defaultValues: {
       allowDirectContact: true,
       budget: "",
@@ -83,7 +83,7 @@ export function PublishForm() {
       company: "",
      startAt: "",
      deadlineAt: "",
-    } as DemandInput,
+    } as DemandFormInput,
   })
 
   async function next() {
@@ -95,7 +95,7 @@ export function PublishForm() {
     setStep((s) => Math.max(s - 1, 0))
   }
 
-  async function onValid(values: DemandInput) {
+  async function onValid(values: DemandFormInput) {
     setConfirmOpen(false)
     setSubmitting(true)
     try {
@@ -108,8 +108,8 @@ export function PublishForm() {
       if (!res.ok) {
         throw new Error(serverError(t, data))
       }
-      toast.success(t.publish.toastSuccess)
-      router.push(`/publish/success?manage=${data.manageToken}&id=${data.id}`)
+      toast.success(t.publish.toastSuccess, { duration: 6000 })
+      router.push(`/demands?new=${data.id}&manage=${data.manageToken}`)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t.errors.fallback)
       setCaptcha("")

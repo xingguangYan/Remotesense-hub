@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Captcha } from "@/components/Captcha"
 import { useTranslations } from "@/i18n/LocaleProvider"
-import { cooperationSchema, type CooperationInput } from "@/lib/validations"
+import { cooperationFormSchema, type CooperationFormInput } from "@/lib/validations"
 
 function fieldError(message?: string) {
   if (!message) return null
@@ -35,11 +35,11 @@ export function CooperationForm() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CooperationInput>({
-    resolver: zodResolver(cooperationSchema),
+  } = useForm<CooperationFormInput>({
+    resolver: zodResolver(cooperationFormSchema),
   })
 
-  async function onValid(values: CooperationInput) {
+  async function onValid(values: CooperationFormInput) {
     setSubmitting(true)
     try {
       const res = await fetch("/api/cooperation", {
