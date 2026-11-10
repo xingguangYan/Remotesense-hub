@@ -85,6 +85,8 @@ npm run seed
 - 登录方式：ModelScope 内置 OAuth（OIDC），访客用 ModelScope 账号登录后即可发布需求、管理自己的需求
 - 数据：SQLite，文件位于 `/mnt/workspace/remotesense.db`（ModelScope 持久化卷，重启不丢）；与 Vercel 主站的 Postgres 相互独立
 - 镜像：仓库根目录 `Dockerfile`（Node 20 + Next.js，端口 7860）
+- 登录入口：`/auth/login`（新窗口授权）→ `/auth/callback` → 会话 cookie（30 天）；`/my` 为「我的需求」，发布页未登录时展示登录引导
+- 已登录用户发布需求：`Demand.userId` 绑定用户，可在 `/my` 查看与关闭自己的需求；Vercel 主站保持原有免注册流程
 
 ### 同步机制
 
