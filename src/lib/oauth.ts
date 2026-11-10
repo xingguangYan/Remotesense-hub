@@ -10,7 +10,18 @@ export function isOAuthConfigured(): boolean {
 }
 
 export function getProviderUrl(): string {
-  return (process.env.OPENID_PROVIDER_URL || "https://www.modelscope.cn").replace(/\/+$/, "")
+  const raw = (process.env.OPENID_PROVIDER_URL || "https://www.modelscope.cn").replace(/\/+$/, "")
+  // 平台注入的 OPENID_PROVIDER_URL 可能为 http://www.modelscope.cn，
+  // OIDC 端点与回调都要求 https，统一升级（localhost 保持原样便于本地调试）
+  try {
+    const url = new URL(raw)
+    if (url.protocol === "http:" && !["localhost", "127.0.0.1"].includes(url.hostname)) {
+      url.protocol = "https:"
+    }
+    return url.toString().replace(/\/+$/, "")
+  } catch {
+    return raw
+  }
 }
 
 /** 站点对外地址：优先显式配置，其次创空间域名，最后本地默认 */

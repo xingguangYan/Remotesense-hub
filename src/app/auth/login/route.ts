@@ -3,6 +3,9 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getOidcEndpoints, getRedirectUri, getSiteUrl, isOAuthConfigured } from "@/lib/oauth"
 
+// 依赖运行时注入的 OAuth 环境变量，禁止构建期静态化缓存
+export const dynamic = "force-dynamic"
+
 /** 只允许站内相对路径，避免登录后被重定向到外站（开放重定向） */
 function safeNext(raw: string | null): string {
   if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/"

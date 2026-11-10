@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma"
 import { getOidcEndpoints, getRedirectUri, getSiteUrl, type ModelScopeProfile } from "@/lib/oauth"
 import { serializeSession, sessionCookie } from "@/lib/session"
 
+export const dynamic = "force-dynamic"
+
 function fail(req: NextRequest, reason: string) {
   console.error(`[oauth] 登录失败: ${reason}`)
   return NextResponse.redirect(`${getSiteUrl()}/?auth=error`)
