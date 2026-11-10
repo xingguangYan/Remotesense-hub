@@ -104,6 +104,12 @@ async function main() {
   const newHash = crypto.createHash("sha256").update(fs.readFileSync(stagingJson)).digest("hex").slice(0, 12)
   console.log(`[sync] 新快照: ${dataset.demands.length} 条需求, sha256=${newHash}`)
 
+  // cn/public/data/demands.json 是 next build cn 的唯一数据来源（构建期注入，运行时不读主站），
+  // 必须在构建前覆盖为最新快照，否则会用仓库里的旧 JSON 搭页面
+  const canonicalJson = path.join(root, "cn", "public", "data", "demands.json")
+  fs.mkdirSync(path.dirname(canonicalJson), { recursive: true })
+  fs.writeFileSync(canonicalJson, JSON.stringify(dataset, null, 2) + "\n")
+
   // 2. 克隆 cn 仓库（纯产物仓），网络波动时重试
   const repoDir = path.join(tmp, "repo")
   await retryGit("clone", ["clone", "--depth", "1", remote, repoDir], { cwd: tmp })
