@@ -8,6 +8,8 @@ import { LocaleProvider } from "@/i18n/LocaleProvider"
 import { getLocale } from "@/i18n/server"
 import { getMessages } from "@/i18n/messages"
 import { siteConfig } from "@/lib/constants"
+import { isOAuthConfigured } from "@/lib/oauth"
+import { getSessionUser } from "@/lib/session"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" })
@@ -29,12 +31,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const locale = getLocale()
   const messages = getMessages(locale)
+  const user = getSessionUser()
 
   return (
     <html lang={locale} className={inter.variable}>
       <body className="flex min-h-screen flex-col bg-background font-sans text-foreground antialiased">
         <LocaleProvider locale={locale} messages={messages}>
-          <Navbar />
+          <Navbar user={user} oauthEnabled={isOAuthConfigured()} />
           <main className="flex-1">{children}</main>
           <SupportAuthor />
           <Footer />

@@ -59,7 +59,7 @@ function serverError(
     : data?.error?.message || t.errors.fallback
 }
 
-export function PublishForm() {
+export function PublishForm({ defaultName = "" }: { defaultName?: string }) {
   const router = useRouter()
   const { t, locale } = useTranslations()
   const [step, setStep] = useState(0)
@@ -76,6 +76,7 @@ export function PublishForm() {
   } = useForm<DemandFormInput>({
     resolver: zodResolver(demandFormSchema),
     defaultValues: {
+      contactName: defaultName,
       allowDirectContact: true,
       budget: "",
       area: "",
@@ -106,6 +107,10 @@ export function PublishForm() {
       })
       const data = await res.json()
       if (!res.ok) {
+        if (res.status === 401) {
+          router.push("/auth/login?next=/publish")
+          return
+        }
         throw new Error(serverError(t, data))
       }
       toast.success(t.publish.toastSuccess, { duration: 6000 })

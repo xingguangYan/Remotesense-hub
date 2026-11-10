@@ -76,35 +76,29 @@ npm run seed
 - **反垃圾**：数学验证码 + 敏感词过滤 + 24h 未验证自动标记失效
 - **脱敏**：列表页与详情页联系方式一律脱敏，完整信息仅在管理链接内可见
 
-## 国内展示层（ModelScope Space）
+## 国内站（ModelScope Docker 创空间，可登录发布）
 
-为解决国内访问 Vercel 主站不稳定的问题，主站可静态导出一份只读的国内展示层，托管在 ModelScope Static Space：
+国内访问 Vercel 主站不稳定，因此国内站完整运行在 ModelScope **Docker 创空间**：
 
-- 空间：`xg346049806/remotesense-hub`（Static SDK，免费 `platform/2v-cpu-8g-mem`）
+- 空间：`xg346049806/remotesense-hub`（Docker SDK，免费 `platform/2v-cpu-8g-mem`）
 - 访问地址：<https://xg346049806-remotesense-hub-92da07.ms.show>
-
-同一份产物同时推送到独立仓库 `Remotesense-hub-cn`（GitHub 侧留档与触发链路）。展示层只包含浏览类页面（首页 / 需求大厅 / 需求详情 / 关于），不包含发布、登录、消息等写操作。
-
-导出开启 `trailingSlash: true`：ModelScope Static 托管支持目录索引（`/demands` → `demands/index.html`），不支持无后缀 `.html` 映射。
+- 登录方式：ModelScope 内置 OAuth（OIDC），访客用 ModelScope 账号登录后即可发布需求、管理自己的需求
+- 数据：SQLite，文件位于 `/mnt/workspace/remotesense.db`（ModelScope 持久化卷，重启不丢）；与 Vercel 主站的 Postgres 相互独立
+- 镜像：仓库根目录 `Dockerfile`（Node 20 + Next.js，端口 7860）
 
 ### 同步机制
 
-- `.github/workflows/sync-cn.yml`：读主站生产 Postgres 的 `published` 需求 → 脱敏导出 `data/demands.json` → `next build cn` 生成 `out/` → force-push 到 `Remotesense-hub-cn` → 推送 `cn/out` 到 ModelScope Space 仓库并调用部署接口
-- ModelScope 的 git 推送**不会**自动生效，脚本推送后会调用 `POST /openapi/v1/studios/{owner}/{repo}/deploy` 并轮询状态直到 `Running`
-- 幂等：产物 JSON 的 SHA256 与上一提交一致则跳过，不产生空提交；git 网络操作指数退避重试 3 次
-- 触发路径：主站发布 / 审核 / 编辑 / 关闭 / 提交意向成功后 fire-and-forget 调 `workflow_dispatch`（失败不阻塞用户操作）；每小时 cron 兜底
+- `.github/workflows/sync-cn.yml`：推送到 master / 每小时 cron / 主站写操作 dispatch → `scripts/deploy-modelscope-app.mjs` 把源码（去掉依赖与构建产物）推到创空间仓库 → 调 `POST /openapi/v1/studios/{owner}/{repo}/deploy` → 轮询到 `Running`
+- 幂等：创空间仓库内容与当前代码一致时跳过推送与部署
+- 本地也可手动执行：`MODELSCOPE_TOKEN=ms-... node scripts/deploy-modelscope-app.mjs`
 
 ### 需要配置的 secret / 环境变量
 
 GitHub 仓库 Secrets（`Settings → Secrets and variables → Actions`）：
 
-- `DATABASE_POSTGRES_URL`：Vercel Postgres 直连串（`postgresql://...`，即 `prisma/schema.prisma` 里读的那个变量）
-- `CN_SYNC_PAT`：对 `Remotesense-hub-cn` 有 `contents:write` 权限的 PAT
-- `MODELSCOPE_TOKEN`：ModelScope 访问令牌（`ms-...`），用于推送 Space 仓库并调用部署接口
+- `MODELSCOPE_TOKEN`：ModelScope 访问令牌（`ms-...`），用于推送创空间仓库并调用部署接口
 
-Vercel 项目环境变量（供主站运行时触发 dispatch）：
-
-- `CN_SYNC_PAT`：同上
+创空间 OAuth 由平台注入（`OAUTH_CLIENT_ID` / `OAUTH_CLIENT_SECRET` / `OPENID_PROVIDER_URL` / `STUDIO_HOST`），无需手工配置；在创空间设置中开启 OAuth 并选择 `openid profile` 权限后重新部署即可。
 
 ### 本地预览
 

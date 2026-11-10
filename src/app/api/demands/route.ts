@@ -12,6 +12,8 @@ import { sendEmail } from "@/lib/email/client"
 import { newDemandNotifyHtml } from "@/lib/email/templates"
 import { triggerCnSync } from "@/lib/cn-sync"
 import { BUDGETS, CATEGORY_LABELS, DEMAND_CATEGORIES, siteConfig } from "@/lib/constants"
+import { getSiteUrl, isOAuthConfigured } from "@/lib/oauth"
+import { getSessionUser } from "@/lib/session"
 import { parseOptionalDate, startOfTodayUtc } from "@/lib/utils"
 
 /** 已发布需求列表（支持筛选，供客户端分页/筛选调用） */
@@ -65,6 +67,12 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const ip = getClientIP(req)
 
+  // 国内站（ModelScope 空间）开启 OAuth 后必须登录才能发布
+  const sessionUser = getSessionUser()
+  if (isOAuthConfigured() && !sessionUser) {
+    return apiError(401, "UNAUTHORIZED", "请先使用 ModelScope 账号登录")
+  }
+
   const parsed = demandSchema.safeParse(await req.json())
   if (!parsed.success) {
     return apiError(422, "VALIDATION_ERROR", "表单校验未通过", {
@@ -89,7 +97,7 @@ export async function POST(req: Request) {
   }
 
   const manageToken = generateToken()
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  const base = getSiteUrl()
 
  const demand = await prisma.demand.create({
     data: {
@@ -107,6 +115,7 @@ export async function POST(req: Request) {
       company: parsed.data.company || null,
       allowDirectContact: parsed.data.allowDirectContact,
       status: "published",
+      userId: sessionUser?.id ?? null,
       startAt: parseOptionalDate(parsed.data.startAt),
       deadlineAt: parseOptionalDate(parsed.data.deadlineAt),
       manageTokenHash: hashToken(manageToken),

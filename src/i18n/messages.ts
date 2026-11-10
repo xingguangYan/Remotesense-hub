@@ -18,6 +18,10 @@ const zh = {
     publish: "发布需求",
     cooperation: "商务合作",
     about: "关于",
+    login: "ModelScope 登录",
+    logout: "退出",
+    myDemands: "我的需求",
+    loggedInAs: "已登录",
   },
   common: {
     viewAll: "查看全部",
@@ -346,6 +350,10 @@ const en = {
     publish: "Publish",
     cooperation: "Partnership",
     about: "About",
+    login: "ModelScope Login",
+    logout: "Log out",
+    myDemands: "My Demands",
+    loggedInAs: "Signed in",
   },
   common: {
     viewAll: "View all",

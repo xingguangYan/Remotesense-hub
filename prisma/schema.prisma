@@ -47,11 +47,31 @@ model Demand {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // ModelScope 登录用户（国内站发布者），老数据允许为空
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   inquiries Inquiry[]
 
   @@index([status, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
   @@index([category])
   @@index([region])
+}
+
+/// ModelScope OAuth 登录用户（国内站）
+model User {
+  id          String   @id @default(cuid())
+  msSub       String   @unique // ModelScope OIDC sub
+  username    String?  // preferred_username
+  name        String?  // 昵称
+  avatarUrl   String?  // picture
+  createdAt   DateTime @default(now())
+  lastLoginAt DateTime @default(now())
+
+  demands Demand[]
+
+  @@index([lastLoginAt(sort: Desc)])
 }
 
 /// 服务方对需求的咨询 / 认领

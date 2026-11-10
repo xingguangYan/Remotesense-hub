@@ -1,67 +1,46 @@
-name: sync-cn
+name: deploy-modelscope
 
 on:
-  # 主站代码或文档推送即自动构建部署国内展示层（幂等：无实质变化会跳过）
+  # 推送到 master 即自动构建并部署国内站（ModelScope Docker 创空间）
   push:
     branches: [master]
   workflow_dispatch:
   schedule:
-    # 每小时兜底同步一次（UTC 时间，即北京 8 点起每小时整点）
+    # 每小时兜底同步一次（UTC 整点，即北京时间整点）
     - cron: "0 * * * *"
 
 permissions:
   contents: read
 
 jobs:
-  sync:
+  deploy:
     runs-on: ubuntu-latest
-    # 原有构建 ~2-4 分钟 + ModelScope 推送与部署轮询上限 5 分钟，留足余量
-    timeout-minutes: 25
+    # 镜像构建 + 启动轮询上限 10 分钟，留足余量
+    timeout-minutes: 20
     steps:
-      - name: 检出主站
+      - name: 检出代码
         uses: actions/checkout@v4
 
       - name: 安装 Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-
-      - name: 安装依赖
-        run: npm ci
 
       - name: 检查必需的 secret
         run: |
-          if [ -z "${DATABASE_POSTGRES_URL}" ]; then
-            echo "::error::缺少 GitHub Secret：DATABASE_POSTGRES_URL（Vercel Postgres 直连串，postgresql://...）。请到仓库 Settings → Secrets and variables → Actions → New repository secret 添加后重试。"
-            exit 1
-          fi
-          if [ -z "${CN_SYNC_PAT}" ]; then
-            echo "::error::缺少 GitHub Secret：CN_SYNC_PAT（对 Remotesense-hub-cn 有 contents:write 的 PAT）。"
-            exit 1
-          fi
           if [ -z "${MODELSCOPE_TOKEN}" ]; then
-            echo "::error::缺少 GitHub Secret：MODELSCOPE_TOKEN（ModelScope 访问令牌，用于部署国内展示层 Space）。"
+            echo "::error::缺少 GitHub Secret：MODELSCOPE_TOKEN（ModelScope 访问令牌）。"
             exit 1
           fi
         env:
-          DATABASE_POSTGRES_URL: ${{ secrets.DATABASE_POSTGRES_URL }}
-          CN_SYNC_PAT: ${{ secrets.CN_SYNC_PAT }}
           MODELSCOPE_TOKEN: ${{ secrets.MODELSCOPE_TOKEN }}
 
-      - name: 生成 Prisma Client（Postgres）
-        run: npx prisma generate --schema prisma/schema.prisma
+      - name: 推送源码并部署 ModelScope 创空间
+        run: node scripts/deploy-modelscope-app.mjs
         env:
-          DATABASE_POSTGRES_URL: ${{ secrets.DATABASE_POSTGRES_URL }}
-
-      - name: 同步产物到 Remotesense-hub-cn
-        run: npx tsx scripts/sync-cn.ts
-        env:
-          CN_SYNC_PAT: ${{ secrets.CN_SYNC_PAT }}
-          DATABASE_POSTGRES_URL: ${{ secrets.DATABASE_POSTGRES_URL }}
           MODELSCOPE_TOKEN: ${{ secrets.MODELSCOPE_TOKEN }}
 
-      - name: 同步失败告警
+      - name: 部署失败告警
         if: failure()
         run: |
-          echo "::error::同步到 Remotesense-hub-cn 或 ModelScope Space 失败，下次定时任务会自动重试"
+          echo "::error::ModelScope 创空间部署失败，下次定时任务会自动重试"
