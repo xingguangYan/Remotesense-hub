@@ -16,9 +16,9 @@ export type DemandCardData = {
   category: string
   region: string
   budget: string | null
-  createdAt: Date
   startAt?: Date | string | null
   deadlineAt?: Date | string | null
+  createdAt: Date | string
   isNew?: boolean
   _count?: { inquiries: number }
 }

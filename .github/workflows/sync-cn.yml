@@ -1,0 +1,43 @@
+name: sync-cn
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 每小时兜底同步一次（UTC 时间，即北京 8 点起每小时整点）
+    - cron: "0 * * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 检出主站
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 生成 Prisma Client（Postgres）
+        run: npx prisma generate --schema prisma/schema.prisma
+        env:
+          DATABASE_POSTGRES_URL: ${{ secrets.DATABASE_POSTGRES_URL }}
+
+      - name: 同步产物到 Remotesense-hub-cn
+        run: npx tsx scripts/sync-cn.ts
+        env:
+          CN_SYNC_PAT: ${{ secrets.CN_SYNC_PAT }}
+          DATABASE_POSTGRES_URL: ${{ secrets.DATABASE_POSTGRES_URL }}
+
+      - name: 同步失败告警
+        if: failure()
+        run: |
+          echo "::error::同步到 Remotesense-hub-cn 失败，下次定时任务会自动重试"

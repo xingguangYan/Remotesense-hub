@@ -41,3 +41,10 @@ buildlog*.txt
 /.vercel
 
 .vercel
+
+# 展示层构建产物（推送到 Remotesense-hub-cn 仓库，不进主站仓库）
+/cn/.next/
+/cn/out/
+/cn/next-env.d.ts
+*.tsbuildinfo
+cn/*.tsbuildinfo

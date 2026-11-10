@@ -323,6 +323,16 @@ cat: {
     INTERNAL_ERROR: "服务器错误，请稍后重试",
     fallback: "操作失败，请稍后重试",
   },
+  cn: {
+    inquiryCtaTitle: "对这个需求感兴趣？",
+    inquiryCtaDesc: "在主站提交服务意向，需求方会收到通知并与您联系。展示页不含写操作，提交需前往主站。",
+    inquiryCtaButton: "前往主站提交意向",
+    publishCtaTitle: "想发布类似需求？",
+    publishCtaDesc: "发布需求免注册，填写联系方式并经平台确认后即可展示在大厅。",
+    mainSiteNote: "主站部署在海外网络，国内访问可能较慢；若打不开，可直接邮件联系平台人工转达。",
+    contactFallback: "人工转达邮箱",
+    backToList: "返回需求大厅",
+  },
 }
 
 const en = {
@@ -640,6 +650,16 @@ cat: {
     DEMAND_EXPIRED: "This demand has passed its deadline and no longer accepts inquiries",
     INTERNAL_ERROR: "Server error, please try later",
     fallback: "Operation failed, please try again later",
+  },
+  cn: {
+    inquiryCtaTitle: "Interested in this demand?",
+    inquiryCtaDesc: "Submit your service proposal on the main site and the demand owner will be notified. This showcase has no write actions.",
+    inquiryCtaButton: "Open main site to submit",
+    publishCtaTitle: "Want to publish a demand?",
+    publishCtaDesc: "Publishing needs no account. Fill in your contact details and the demand goes live after platform review.",
+    mainSiteNote: "The main site runs on an overseas network and may load slowly from mainland China. If it fails to open, email the platform for manual relay.",
+    contactFallback: "Manual relay email",
+    backToList: "Back to demand hall",
   },
 }
 
