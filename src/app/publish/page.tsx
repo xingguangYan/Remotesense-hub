@@ -1,5 +1,4 @@
-import { FileText } from "lucide-react"
-import { redirect } from "next/navigation"
+import { FileText, LogIn } from "lucide-react"
 import { PublishForm } from "@/components/PublishForm"
 import { getMessages } from "@/i18n/messages"
 import { getLocale } from "@/i18n/server"
@@ -13,7 +12,26 @@ export default async function PublishPage() {
 
   // 国内站（ModelScope 空间）开启 OAuth 后必须登录才能发布；Vercel 站保持原免注册流程
   if (isOAuthConfigured() && !user) {
-    redirect("/auth/login?next=/publish")
+    return (
+      <div className="mx-auto flex max-w-md flex-col items-center px-4 py-20 text-center">
+        <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+          <LogIn className="h-7 w-7 text-primary" />
+        </span>
+        <h1 className="mt-5 text-xl font-bold text-foreground">登录后即可发布需求</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          国内站使用 ModelScope 账号登录。点击下方按钮在新窗口完成授权，授权后回到本页刷新即可发布。
+        </p>
+        <a
+          href="/auth/login?next=/publish"
+          target="_blank"
+          rel="noopener"
+          className="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          <LogIn className="h-4 w-4" />
+          使用 ModelScope 登录
+        </a>
+      </div>
+    )
   }
 
   return (

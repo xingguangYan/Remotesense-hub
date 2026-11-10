@@ -1,6 +1,5 @@
 import Link from "next/link"
-import { redirect } from "next/navigation"
-import { UserRound } from "lucide-react"
+import { LogIn, UserRound } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { getMessages } from "@/i18n/messages"
@@ -30,7 +29,26 @@ export default async function MyDemandsPage() {
   const user = getSessionUser()
 
   if (isOAuthConfigured() && !user) {
-    redirect("/auth/login?next=/my")
+    return (
+      <div className="mx-auto flex max-w-md flex-col items-center px-4 py-20 text-center">
+        <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+          <LogIn className="h-7 w-7 text-primary" />
+        </span>
+        <h1 className="mt-5 text-xl font-bold text-foreground">{t.nav.myDemands}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          使用 ModelScope 账号登录后，可查看和管理自己发布的需求。
+        </p>
+        <a
+          href="/auth/login?next=/my"
+          target="_blank"
+          rel="noopener"
+          className="mt-6 inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          <LogIn className="h-4 w-4" />
+          使用 ModelScope 登录
+        </a>
+      </div>
+    )
   }
 
   const demands = user

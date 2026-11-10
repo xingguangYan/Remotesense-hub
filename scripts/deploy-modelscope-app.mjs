@@ -141,24 +141,24 @@ async function main() {
 
   // OpenAPI 响应外层有 data 信封；构建 + 启动通常 2-6 分钟
   const deadline = Date.now() + 10 * 60_000
-  let status = "Unknown"
+  let deployStatus = "Unknown"
   while (Date.now() < deadline) {
     await sleep(15000)
     const res = await fetch(API, { headers: { Authorization: `Bearer ${TOKEN}` } })
     if (res.ok) {
       const body = await res.json()
-      status = body?.data?.status ?? body?.status ?? "Unknown"
-      console.log(`[deploy] 状态: ${status}`)
-      if (status === "Running") {
+      deployStatus = body?.data?.status ?? body?.status ?? "Unknown"
+      console.log(`[deploy] 状态: ${deployStatus}`)
+      if (deployStatus === "Running") {
         console.log("[deploy] 部署完成")
         return
       }
-      if (status === "Failed" || status === "Error") {
-        throw new Error(`[deploy] 部署失败: ${status}`)
+      if (deployStatus === "Failed" || deployStatus === "Error") {
+        throw new Error(`[deploy] 部署失败: ${deployStatus}`)
       }
     }
   }
-  throw new Error(`[deploy] 部署超时（最后状态: ${status}）`)
+  throw new Error(`[deploy] 部署超时（最后状态: ${deployStatus}）`)
 }
 
 main().catch((error) => {

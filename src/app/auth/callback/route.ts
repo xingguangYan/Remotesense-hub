@@ -6,7 +6,7 @@ import { serializeSession, sessionCookie } from "@/lib/session"
 
 function fail(req: NextRequest, reason: string) {
   console.error(`[oauth] 登录失败: ${reason}`)
-  return NextResponse.redirect(new URL("/?auth=error", req.url))
+  return NextResponse.redirect(`${getSiteUrl()}/?auth=error`)
 }
 
 export async function GET(req: NextRequest) {
@@ -95,7 +95,8 @@ export async function GET(req: NextRequest) {
     }),
     {
       httpOnly: true,
-      sameSite: "lax",
+      // 创空间页面以 iframe 形式嵌在 modelscope.cn 下，Lax 会导致 iframe 内不发送登录态
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
       maxAge: sessionCookie.maxAge,

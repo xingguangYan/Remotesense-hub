@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { getOidcEndpoints, getRedirectUri, isOAuthConfigured } from "@/lib/oauth"
+import { getOidcEndpoints, getRedirectUri, getSiteUrl, isOAuthConfigured } from "@/lib/oauth"
 
 /** 只允许站内相对路径，避免登录后被重定向到外站（开放重定向） */
 function safeNext(raw: string | null): string {
@@ -11,7 +11,7 @@ function safeNext(raw: string | null): string {
 
 export async function GET(req: NextRequest) {
   if (!isOAuthConfigured()) {
-    return NextResponse.redirect(new URL("/?auth=unavailable", req.url))
+    return NextResponse.redirect(`${getSiteUrl()}/?auth=unavailable`)
   }
 
   const next = safeNext(req.nextUrl.searchParams.get("next"))
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     authorizeUrl = new URL(endpoints.authorization_endpoint)
   } catch (error) {
     console.error("[oauth] discovery 失败:", error)
-    return NextResponse.redirect(new URL("/?auth=error", req.url))
+    return NextResponse.redirect(`${getSiteUrl()}/?auth=error`)
   }
 
   authorizeUrl.searchParams.set("response_type", "code")
