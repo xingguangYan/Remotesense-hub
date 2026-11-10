@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { apiError } from "@/lib/api"
 import { hashToken } from "@/lib/tokens"
 import { manageEditSchema } from "@/lib/validations"
+import { triggerCnSync } from "@/lib/cn-sync"
 
 async function findDemandByToken(token: string) {
   return prisma.demand.findUnique({
@@ -57,6 +58,9 @@ export async function PATCH(
     },
   })
 
+  // 同步国内展示层（限时等待，失败不阻塞编辑）
+  await triggerCnSync("管理链接编辑需求")
+
   return NextResponse.json({ id: updated.id, updatedAt: updated.updatedAt })
 }
 
@@ -73,6 +77,9 @@ export async function DELETE(
     where: { id: demand.id },
     data: { status: "closed" },
   })
+
+  // 同步国内展示层（限时等待，失败不阻塞关闭）
+  await triggerCnSync("管理链接关闭需求")
 
   return NextResponse.json({ ok: true })
 }

@@ -10,6 +10,7 @@ import {
 } from "@/lib/validations"
 import { sendEmail } from "@/lib/email/client"
 import { newDemandNotifyHtml } from "@/lib/email/templates"
+import { triggerCnSync } from "@/lib/cn-sync"
 import { BUDGETS, CATEGORY_LABELS, DEMAND_CATEGORIES, siteConfig } from "@/lib/constants"
 import { parseOptionalDate, startOfTodayUtc } from "@/lib/utils"
 
@@ -132,6 +133,9 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("新需求通知邮件发送失败:", error)
   }
+
+  // 同步国内展示层（限时等待，失败不阻塞发布）
+  await triggerCnSync("新需求发布")
 
   return NextResponse.json(
     { id: demand.id, status: "published", manageToken },

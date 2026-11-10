@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { apiError } from "@/lib/api"
 import { hashToken } from "@/lib/tokens"
+import { triggerCnSync } from "@/lib/cn-sync"
 
 /** 凭管理链接关闭需求：从需求大厅下线 */
 export async function POST(
@@ -24,6 +25,9 @@ export async function POST(
     where: { id: demand.id },
     data: { status: "closed" },
   })
+
+  // 同步国内展示层（限时等待，失败不阻塞关闭）
+  await triggerCnSync("管理链接关闭需求")
 
   return NextResponse.json({ ok: true })
 }

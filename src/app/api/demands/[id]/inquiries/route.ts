@@ -7,6 +7,7 @@ import { checkSensitive } from "@/lib/sensitive-words"
 import { inquirySchema } from "@/lib/validations"
 import { sendEmail } from "@/lib/email/client"
 import { newInquiryNotifyHtml } from "@/lib/email/templates"
+import { triggerCnSync } from "@/lib/cn-sync"
 import { siteConfig } from "@/lib/constants"
 import { isExpired } from "@/lib/utils"
 
@@ -90,6 +91,9 @@ export async function POST(
   } catch (error) {
     console.error("咨询通知邮件发送失败:", error)
   }
+
+  // 同步国内展示层（意向数计入展示数据，限时等待，失败不阻塞提交）
+  await triggerCnSync("新服务方意向")
 
   return NextResponse.json(
     { ok: true, message: "意向已提交" },

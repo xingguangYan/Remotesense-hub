@@ -40,7 +40,9 @@ if (!PAT) {
 
 const remote = `https://x-access-token:${PAT}@github.com/${CN_REPO}.git`
 
-function git(args, opts = {}) {
+type GitOpts = { cwd?: string; capture?: boolean }
+
+function git(args: string[], opts: GitOpts = {}) {
   const res = spawnSync("git", args, {
     cwd: opts.cwd || root,
     encoding: "utf8",
@@ -60,12 +62,12 @@ function git(args, opts = {}) {
   return res.stdout ? res.stdout.toString().trim() : ""
 }
 
-function sleep(ms) {
+function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /** git 网络操作统一重试：5s / 15s / 40s 三次，仍失败抛错（Actions 标红，下次 cron 兜底） */
-async function retryGit(label, args, opts = {}) {
+async function retryGit(label: string, args: string[], opts: GitOpts = {}) {
   const delays = [5_000, 15_000, 40_000]
   for (let attempt = 1; attempt <= 3; attempt++) {
     const res = spawnSync("git", args, {
@@ -93,7 +95,7 @@ async function retryGit(label, args, opts = {}) {
 
 async function main() {
   // 1. 导出公开数据集(确定性：固定字段顺序、无时间戳)
-  const { buildPublicDataset } = await import("../src/lib/cn-export.ts")
+  const { buildPublicDataset } = await import("../src/lib/cn-export")
   const dataset = await buildPublicDataset()
 
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rs-cn-"))
