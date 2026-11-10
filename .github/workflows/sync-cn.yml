@@ -26,6 +26,20 @@ jobs:
       - name: 安装依赖
         run: npm ci
 
+      - name: 检查必需的 secret
+        run: |
+          if [ -z "${DATABASE_POSTGRES_URL}" ]; then
+            echo "::error::缺少 GitHub Secret：DATABASE_POSTGRES_URL（Vercel Postgres 直连串，postgresql://...）。请到仓库 Settings → Secrets and variables → Actions → New repository secret 添加后重试。"
+            exit 1
+          fi
+          if [ -z "${CN_SYNC_PAT}" ]; then
+            echo "::error::缺少 GitHub Secret：CN_SYNC_PAT（对 Remotesense-hub-cn 有 contents:write 的 PAT）。"
+            exit 1
+          fi
+        env:
+          DATABASE_POSTGRES_URL: ${{ secrets.DATABASE_POSTGRES_URL }}
+          CN_SYNC_PAT: ${{ secrets.CN_SYNC_PAT }}
+
       - name: 生成 Prisma Client（Postgres）
         run: npx prisma generate --schema prisma/schema.prisma
         env:
