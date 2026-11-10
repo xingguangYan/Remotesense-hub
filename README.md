@@ -76,13 +76,21 @@ npm run seed
 - **反垃圾**：数学验证码 + 敏感词过滤 + 24h 未验证自动标记失效
 - **脱敏**：列表页与详情页联系方式一律脱敏，完整信息仅在管理链接内可见
 
-## 国内展示层（Remotesense-hub-cn）
+## 国内展示层（ModelScope Space）
 
-为解决国内访问 Vercel 主站不稳定的问题，主站可静态导出一份只读的国内展示层，托管到独立仓库 `Remotesense-hub-cn`（配合 ModelScope Static SDK + 香港反代，详见部署文档）。展示层只包含浏览类页面（首页 / 需求大厅 / 需求详情 / 关于），不包含发布、登录、消息等写操作。
+为解决国内访问 Vercel 主站不稳定的问题，主站可静态导出一份只读的国内展示层，托管在 ModelScope Static Space：
+
+- 空间：`xg346049806/remotesense-hub`（Static SDK，免费 `platform/2v-cpu-8g-mem`）
+- 访问地址：<https://xg346049806-remotesense-hub-92da07.ms.show>
+
+同一份产物同时推送到独立仓库 `Remotesense-hub-cn`（GitHub 侧留档与触发链路）。展示层只包含浏览类页面（首页 / 需求大厅 / 需求详情 / 关于），不包含发布、登录、消息等写操作。
+
+导出开启 `trailingSlash: true`：ModelScope Static 托管支持目录索引（`/demands` → `demands/index.html`），不支持无后缀 `.html` 映射。
 
 ### 同步机制
 
-- `.github/workflows/sync-cn.yml`：读主站生产 Postgres 的 `published` 需求 → 脱敏导出 `data/demands.json` → `next build cn` 生成 `out/` → force-push 到 `Remotesense-hub-cn`
+- `.github/workflows/sync-cn.yml`：读主站生产 Postgres 的 `published` 需求 → 脱敏导出 `data/demands.json` → `next build cn` 生成 `out/` → force-push 到 `Remotesense-hub-cn` → 推送 `cn/out` 到 ModelScope Space 仓库并调用部署接口
+- ModelScope 的 git 推送**不会**自动生效，脚本推送后会调用 `POST /openapi/v1/studios/{owner}/{repo}/deploy` 并轮询状态直到 `Running`
 - 幂等：产物 JSON 的 SHA256 与上一提交一致则跳过，不产生空提交；git 网络操作指数退避重试 3 次
 - 触发路径：主站发布 / 审核 / 编辑 / 关闭 / 提交意向成功后 fire-and-forget 调 `workflow_dispatch`（失败不阻塞用户操作）；每小时 cron 兜底
 
@@ -92,6 +100,7 @@ GitHub 仓库 Secrets（`Settings → Secrets and variables → Actions`）：
 
 - `DATABASE_POSTGRES_URL`：Vercel Postgres 直连串（`postgresql://...`，即 `prisma/schema.prisma` 里读的那个变量）
 - `CN_SYNC_PAT`：对 `Remotesense-hub-cn` 有 `contents:write` 权限的 PAT
+- `MODELSCOPE_TOKEN`：ModelScope 访问令牌（`ms-...`），用于推送 Space 仓库并调用部署接口
 
 Vercel 项目环境变量（供主站运行时触发 dispatch）：
 
@@ -102,7 +111,7 @@ Vercel 项目环境变量（供主站运行时触发 dispatch）：
 ```bash
 npm run build:cn    # 导出数据 + 构建静态产物到 cn/out
 npm run preview:cn  # 本地 serve cn/out 预览全部路由
-npm run sync:cn     # 完整同步（需要外网 git 可达 + CN_SYNC_PAT）
+npm run sync:cn     # 完整同步（需要外网 git 可达 + CN_SYNC_PAT + MODELSCOPE_TOKEN）
 ```
 
 ## 免责声明

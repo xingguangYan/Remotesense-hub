@@ -13,6 +13,12 @@ import { execSync, spawnSync } from "node:child_process"
 const CN_REPO = "xingguangYan/Remotesense-hub-cn"
 const root = process.cwd()
 
+// ModelScope Space：国内展示层的实际托管处（Static SDK）
+const MODELSCOPE_STUDIO_OWNER = "xg346049806"
+const MODELSCOPE_STUDIO_NAME = "remotesense-hub"
+const MODELSCOPE_DEPLOY_API =
+  `https://modelscope.cn/openapi/v1/studios/${MODELSCOPE_STUDIO_OWNER}/${MODELSCOPE_STUDIO_NAME}/deploy`
+
 function loadDotEnv() {
   try {
     const text = fs.readFileSync(path.join(root, ".env"), "utf8")
@@ -205,6 +211,88 @@ async function main() {
 
   await retryGit("push", ["push", "--force-with-lease", "origin", "HEAD:main"], { cwd: repoDir })
   console.log("[sync] 推送成功，cn 仓库已更新")
+
+  // 8. 部署 ModelScope Space（国内展示层实际托管处；推送后必须显式触发部署才生效）
+  await deployModelscope(newHash, dataset.demands.length)
+}
+
+/** 把 cn/out 铺进目标仓库目录（保留 .git，其余全量替换） */
+function stageOutDir(repoDir: string) {
+  const outDir = path.join(root, "cn", "out")
+  for (const name of fs.readdirSync(repoDir).filter((n) => n !== ".git")) {
+    fs.rmSync(path.join(repoDir, name), { recursive: true, force: true })
+  }
+  for (const name of fs.readdirSync(outDir)) {
+    fs.cpSync(path.join(outDir, name), path.join(repoDir, name), { recursive: true })
+  }
+}
+
+/**
+ * 部署到 ModelScope Space（Static SDK）：
+ * 克隆 studio 仓库 -> 铺产物 -> 推送 -> 调部署 API -> 轮询到 Running。
+ * 注意：ModelScope 的 git 推送不会自动触发生效，必须显式调用 deploy 接口。
+ * 缺 MODELSCOPE_TOKEN 时只告警跳过，不影响 GitHub 侧同步。
+ */
+async function deployModelscope(dataHash: string, demandCount: number) {
+  const token = process.env.MODELSCOPE_TOKEN
+  if (!token) {
+    console.warn("[sync] 未配置 MODELSCOPE_TOKEN，跳过 ModelScope Space 部署")
+    return
+  }
+
+  const studioRemote = `https://oauth2:${token}@modelscope.cn/studios/${MODELSCOPE_STUDIO_OWNER}/${MODELSCOPE_STUDIO_NAME}.git`
+  const statusApi = `https://modelscope.cn/openapi/v1/studios/${MODELSCOPE_STUDIO_OWNER}/${MODELSCOPE_STUDIO_NAME}`
+
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rs-ms-"))
+  const studioDir = path.join(tmp, "studio")
+  await retryGit("ms-clone", ["clone", "--depth", "1", studioRemote, studioDir], { cwd: tmp })
+
+  stageOutDir(studioDir)
+  git(["add", "-A"], { cwd: studioDir })
+  git(
+    [
+      "-c",
+      "user.name=rs-hub-sync",
+      "-c",
+      "user.email=sync@remotesense-hub.local",
+      "commit",
+      "-m",
+      `chore(data): sync demands sha256=${dataHash} (${demandCount} demands)`,
+    ],
+    { cwd: studioDir },
+  )
+  await retryGit("ms-push", ["push", "origin", "HEAD:master"], { cwd: studioDir })
+  console.log("[sync] ModelScope Space 仓库已更新，触发部署 ...")
+
+  const deployRes = await fetch(MODELSCOPE_DEPLOY_API, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+  })
+  if (!deployRes.ok) {
+    throw new Error(
+      `[sync] ModelScope deploy API 返回 ${deployRes.status}: ${(await deployRes.text()).slice(0, 200)}`,
+    )
+  }
+
+  // 轮询部署状态：Building/Deploying -> Running，上限 5 分钟；失败/超时均抛错由 cron 兜底重试
+  const deadline = Date.now() + 5 * 60_000
+  let status = "Unknown"
+  while (Date.now() < deadline) {
+    await sleep(10_000)
+    const res = await fetch(statusApi, { headers: { Authorization: `Bearer ${token}` } })
+    if (res.ok) {
+      status = ((await res.json()) as { status?: string }).status ?? "Unknown"
+      console.log(`[sync] ModelScope 部署状态: ${status}`)
+      if (status === "Running") {
+        console.log("[sync] ModelScope Space 部署完成")
+        return
+      }
+      if (status === "Failed" || status === "Error") {
+        throw new Error(`[sync] ModelScope Space 部署失败: ${status}`)
+      }
+    }
+  }
+  throw new Error(`[sync] ModelScope Space 部署超时（最后状态: ${status}）`)
 }
 
 main().catch((error) => {

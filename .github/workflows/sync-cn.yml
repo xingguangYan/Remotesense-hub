@@ -1,6 +1,9 @@
 name: sync-cn
 
 on:
+  # 主站代码或文档推送即自动构建部署国内展示层（幂等：无实质变化会跳过）
+  push:
+    branches: [master]
   workflow_dispatch:
   schedule:
     # 每小时兜底同步一次（UTC 时间，即北京 8 点起每小时整点）
@@ -12,7 +15,8 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 原有构建 ~2-4 分钟 + ModelScope 推送与部署轮询上限 5 分钟，留足余量
+    timeout-minutes: 25
     steps:
       - name: 检出主站
         uses: actions/checkout@v4
@@ -36,9 +40,14 @@ jobs:
             echo "::error::缺少 GitHub Secret：CN_SYNC_PAT（对 Remotesense-hub-cn 有 contents:write 的 PAT）。"
             exit 1
           fi
+          if [ -z "${MODELSCOPE_TOKEN}" ]; then
+            echo "::error::缺少 GitHub Secret：MODELSCOPE_TOKEN（ModelScope 访问令牌，用于部署国内展示层 Space）。"
+            exit 1
+          fi
         env:
           DATABASE_POSTGRES_URL: ${{ secrets.DATABASE_POSTGRES_URL }}
           CN_SYNC_PAT: ${{ secrets.CN_SYNC_PAT }}
+          MODELSCOPE_TOKEN: ${{ secrets.MODELSCOPE_TOKEN }}
 
       - name: 生成 Prisma Client（Postgres）
         run: npx prisma generate --schema prisma/schema.prisma
@@ -50,8 +59,9 @@ jobs:
         env:
           CN_SYNC_PAT: ${{ secrets.CN_SYNC_PAT }}
           DATABASE_POSTGRES_URL: ${{ secrets.DATABASE_POSTGRES_URL }}
+          MODELSCOPE_TOKEN: ${{ secrets.MODELSCOPE_TOKEN }}
 
       - name: 同步失败告警
         if: failure()
         run: |
-          echo "::error::同步到 Remotesense-hub-cn 失败，下次定时任务会自动重试"
+          echo "::error::同步到 Remotesense-hub-cn 或 ModelScope Space 失败，下次定时任务会自动重试"
